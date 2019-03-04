@@ -1,0 +1,7 @@
+hallo
+help
+status
+lijst
+aan
+uit
+documentatie
