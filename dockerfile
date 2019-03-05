@@ -1,12 +1,6 @@
 FROM python:3
-
-ADD chat.py /
-
+ADD . /Fack_Chat
+WORKDIR /Fack_Chat
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY help.py
-
-COPY slack.py
-
+RUN pip install -r requirements.txt
 CMD [ "python", "./chat.py" ]
