@@ -1,5 +1,5 @@
 from slacker import Slacker
-from slackeventsapi import SlackEventAdapt
+from slackeventsapi import SlackEventAdapter
 
 chucknorris_api = 'http://api.icndb.com/jokes/random/'
 clank = Slacker('xoxb-555682767666-559725976260-2Y2Ho96wBukzlTohnjXrz0vK')

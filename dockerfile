@@ -1,6 +1,15 @@
-FROM python:3
-ADD . /Fack_Chat
-WORKDIR /Fack_Chat
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-CMD [ "python", "./chat.py" ]
+FROM alpine:latest
+
+RUN apk add --no-cache python3-dev \
+    && pip3 install --upgrade pip
+
+WORKDIR /fct
+
+COPY . /fct
+
+RUN pip3 --no-cache-dir install -r requirements.txt
+
+EXPOSE 3000
+
+ENTRYPOINT ["python3"]
+CMD ["chat.py"]
