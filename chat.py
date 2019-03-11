@@ -22,4 +22,4 @@ def error_handler(err):
 
 
 # starten van de Flask server op port 3000 met de default /events
-slack_events_adapter.start(port=3000)
+slack_events_adapter.start(port=3000, host="0.0.0.0")
