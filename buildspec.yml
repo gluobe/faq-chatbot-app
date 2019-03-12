@@ -11,6 +11,6 @@ phases:
       - docker tag faq_chat:latest <your-ecr-url>/faq_chat:latest
   post_build:
     commands:
-      - echo build Docker image complete `date`
-      - echo push latest Docker images to ECR...
+      - echo build Docker image klaar
+      - echo push image
       - docker push <your-ecr-url>/faq_chat:latest
