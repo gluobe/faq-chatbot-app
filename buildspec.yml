@@ -1,0 +1,16 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo inloggen bij ecr...
+      - $(aws ecr get-login --no-include-email --region eu-west-2)
+  build:
+    commands:
+      - echo build Docker image
+      - docker build -t faq_chat:latest .
+      - docker tag faq_chat:latest <your-ecr-url>/faq_chat:latest
+  post_build:
+    commands:
+      - echo build Docker image complete `date`
+      - echo push latest Docker images to ECR...
+      - docker push <your-ecr-url>/faq_chat:latest
