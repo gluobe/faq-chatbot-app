@@ -14,4 +14,3 @@ six
 slacker
 slackeventsapi
 urllib3
-sqlite3
