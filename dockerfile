@@ -12,4 +12,4 @@ RUN pip3 --no-cache-dir install -r requirements.txt
 EXPOSE 3000
 
 ENTRYPOINT ["python3"]
-CMD ["facq_chat/chat.py"]
+CMD ["faq_app/chat.py"]
