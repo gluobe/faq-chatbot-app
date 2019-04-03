@@ -27,7 +27,7 @@ def get_bericht():
     if gevonden_woord == "lijst":
         return x + "\n " + sleutels_str()
     if gevonden_woord == "documentatie":
-        return  get_link()
+        return get_link()
     else:
         return x
 
@@ -46,9 +46,13 @@ def get_link():
     for i in databank.get_titels():
         for j in gevraagd:
             if i == j:
-                link = "*" + i + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link(j)
+                link = "*" + i + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link(j, gevonden_woord)
                 return link
             else:
                 link = "Ik weet niet welke documentatie u zoekt, ik heb volgende documentatie links: \n" \
                        + databank.get_titel_en_links()
     return link
+
+
+print(check_for_word("waar kan ik de documentatie vinden over python"))
+print(get_bericht())
