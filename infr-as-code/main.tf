@@ -16,10 +16,10 @@ provider "aws" {
   region = "${var.region}"
 }
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE THE build project
+# CREATE THE codebuild project
 # ---------------------------------------------------------------------------------------------------------------------
 module "build_project_faq_chatbot" {
-  source = "./build"
+  source = "codebuild"
 
   name = "faq-chatbot-build-project"
 }

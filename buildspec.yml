@@ -6,11 +6,11 @@ phases:
       - $(aws ecr get-login --no-include-email --region eu-west-2)
   build:
     commands:
-      - echo build Docker image
-      - docker build -t faq_chat:latest .
+      - echo codebuild Docker image
+      - docker codebuild -t faq_chat:latest .
       - docker tag faq_chat:latest 292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat:latest
   post_build:
     commands:
-      - echo build Docker image klaar
+      - echo codebuild Docker image klaar
       - echo push image
       - docker push 292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat:latest
