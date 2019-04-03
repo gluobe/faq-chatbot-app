@@ -126,3 +126,19 @@ dmypy.json
 *.exe
 .idea
 .idea/*
+
+# terraform
+*.dll
+*.exe
+.idea
+.idea/
+info
+*.retry
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
