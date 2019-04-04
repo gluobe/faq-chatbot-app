@@ -125,7 +125,7 @@ resource "aws_codebuild_project" "codebuild_project" {
 
   source {
     type            = "BITBUCKET"
-    location        = "https://simba-black@bitbucket.org/gluo-faq-chatbot-terraform.git"
+    location        = "https://simba-black@bitbucket.org/xploregroup/gluo-faq-chatbot.git"
     git_clone_depth = 1
   }
 

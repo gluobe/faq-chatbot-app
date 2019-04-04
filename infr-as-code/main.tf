@@ -15,14 +15,6 @@ provider "bitbucket" {
 provider "aws" {
   region = "${var.region}"
 }
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE THE codebuild project
-# ---------------------------------------------------------------------------------------------------------------------
-module "build_project_faq_chatbot" {
-  source = "codebuild"
-
-  name = "faq-chatbot-build-project"
-}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE vpc
@@ -30,8 +22,16 @@ module "build_project_faq_chatbot" {
 module "vpc_faq_chatbot" {
   source = "./network"
 }
-
 /*
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE THE codebuild project
+# ---------------------------------------------------------------------------------------------------------------------
+module "build_project_faq_chatbot" {
+  source = "./codebuild"
+
+  name = "faq-chatbot-build-project"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE ECS CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------
@@ -49,6 +49,21 @@ module "ecs_cluster_faq_chatbot" {
     "${module.vpc_faq_chatbot.prv_subnet_b_id}",
     "${module.vpc_faq_chatbot.prv_subnet_a_id}"
   ]
+}
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE elb
+# ---------------------------------------------------------------------------------------------------------------------
+
+module "fac_chatbot_elb" {
+  source = "./elb"
+
+  name = "faq-chatbot-elb"
+
+  vpc_id = "${module.vpc_faq_chatbot.vpc_id}"
+  subnet_ids = ["${module.vpc_faq_chatbot.pbl_subnet_b_id}", "${module.vpc_faq_chatbot.pbl_subnet_a_id}"]
+
+  instance_port = "80"
+  health_check_path = "health"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -73,19 +88,4 @@ module "faq_chatbot_service" {
   num_env_vars = 1
   env_vars = "${map("RACK_ENV", "production")}"
 }
-
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE elb
-# ---------------------------------------------------------------------------------------------------------------------
-*/
-module "fac_chatbot_elb" {
-  source = "./elb"
-
-  name = "faq-chatbot-elb"
-
-  vpc_id = "${module.vpc_faq_chatbot.vpc_id}"
-  subnet_ids = ["${module.vpc_faq_chatbot.pbl_subnet_b_id}", "${module.vpc_faq_chatbot.pbl_subnet_a_id}"]
-
-  instance_port = "80"
-  health_check_path = "health"
-}
+ */
