@@ -7,10 +7,10 @@ phases:
   build:
     commands:
       - echo codebuild Docker image
-      - docker codebuild -t faq_chat:latest .
+      - docker build -t faq_chat:latest .
       - docker tag faq_chat:latest 292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat:latest
   post_build:
     commands:
-      - echo codebuild Docker image klaar
+      - echo build Docker image klaar
       - echo push image
       - docker push 292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat:latest
