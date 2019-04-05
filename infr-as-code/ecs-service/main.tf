@@ -6,10 +6,10 @@
 resource "aws_ecs_service" "ecs_service" {
   name            = "${var.name}"
   cluster         = "${var.ecs_cluster_id}"
-  task_definition = "${aws_ecs_task_definition.task_def.arn}"
+  task_definition = "${var.task_def_arn}"
   desired_count   = "${var.desired_count}"
   iam_role        = "${aws_iam_role.ecs_service_role.arn}"
-  launch_type = "${var.launch_type}"
+  launch_type     = "${var.launch_type}"
 
   deployment_minimum_healthy_percent = "${var.deployment_minimum_healthy_percent}"
   deployment_maximum_percent         = "${var.deployment_maximum_percent}"
@@ -17,6 +17,7 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_controller {
     type = "${var.deployment_controller}"
   }
+
   load_balancer {
     elb_name       = "${var.elb_naam}"
     container_name = "${var.name}"
@@ -27,47 +28,30 @@ resource "aws_ecs_service" "ecs_service" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE AN ECS TASK TO RUN A DOCKER CONTAINER
+#
 # ---------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
+# nieuwe taskdef voorbeeld
+# ---------------------------------------------------------------------------------------------------------------------
+resource "aws_ecs_service" "ecs_service2" {
+  name                = "${var.name}"
+  task_definition     = "${var.task_def_arn}"
+  desired_count       = 3
+  launch_type         = "${var.launch_type}"
+  scheduling_strategy = "${var.scheduling_strategy}"
+  cluster             = "${var.ecs_cluster_id}"
+  iam_role            = "${aws_iam_role.ecs_service_role.arn}"
 
-resource "aws_ecs_task_definition" "task_def" {
-  family = "${var.name}"
-
-  container_definitions = <<EOF
-[
-  {
-    "name": "${var.name}",
-    "image": "${var.image}:${var.image_version}",
-    "cpu": ${var.cpu},
-    "memory": ${var.memory},
-    "essential": true,
-    "portMappings": [
-      {
-        "containerPort": ${var.container_port},
-        "hostPort": ${var.host_port},
-        "protocol": "tcp"
-      }
-    ],
-    "environment": [${join(",", data.template_file.env_vars.*.rendered)}]
+  deployment_controller {
+    type = "${var.deployment_controller}"
   }
-]
-EOF
-}
 
-# Convert the environment variables the user passed-in into the format expected for for an ECS Task:
-#
-# "environment": [
-#    {"name": "NAME", "value": "VALUE"},
-#    {"name": "NAME", "value": "VALUE"},
-#    ...
-# ]
-#
-data "template_file" "env_vars" {
-  count = "${var.num_env_vars}"
-
-  template = <<EOF
-{"name": "${element(keys(var.env_vars), count.index)}", "value": "${lookup(var.env_vars, element(keys(var.env_vars), count.index))}"}
-EOF
+  load_balancer {
+    elb_name         = ""
+    target_group_arn = "$nog in te vullen"
+    container_name   = "faq-chat moet van de taskdef komen"
+    container_port   = 3000
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -117,26 +101,4 @@ data "aws_iam_policy_document" "ecs_service_policy" {
   }
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# nieuwe taskdef voorbeeld
-# ---------------------------------------------------------------------------------------------------------------------
-resource "aws_ecs_service" "ecs_service2" {
-  name            = "${var.name}"
-  task_definition = "${aws_ecs_task_definition.task_def.arn}"
-  desired_count   = 3
-  launch_type = "${var.launch_type}"
-  scheduling_strategy = "${var.scheduling_strategy}"
-  cluster         = "${var.ecs_cluster_id}"
-  iam_role        = "${aws_iam_role.ecs_service_role.arn}"
 
-  deployment_controller {
-    type = "${var.deployment_controller}"
-  }
-  load_balancer {
-    elb_name = ""
-    target_group_arn = "$nog in te vullen"
-    container_name   = "faq-chat moet van de taskdef komen"
-    container_port   = 3000
-  }
-
-}

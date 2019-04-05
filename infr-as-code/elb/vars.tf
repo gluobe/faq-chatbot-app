@@ -7,7 +7,6 @@ variable "name" {
   description = "De naam van de elastic load balancer "
 }
 
-
 #andere var
 
 variable "vpc_id" {

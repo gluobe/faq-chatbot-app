@@ -27,12 +27,13 @@ EOF
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_ecs_task_definition" "task-def" {
-  family = "${var.name}-task-def"
+  family                   = "${var.name}-task-def"
   requires_compatibilities = ["${var.requires_compatibilities}"]
-  cpu = "${var.task_cpu}"
-  memory = "${var.task_memory}"
-  task_role_arn = "${aws_iam_role.task-def-iam-role.arn}"
-  execution_role_arn = "arn:aws:iam::292242131230:role/ecsTaskExecutionRole"
+  cpu                      = "${var.task_cpu}"
+  memory                   = "${var.task_memory}"
+  task_role_arn            = "${aws_iam_role.task-def-iam-role.arn}"
+  execution_role_arn       = "arn:aws:iam::292242131230:role/ecsTaskExecutionRole"
+
   container_definitions = <<DEFINITION
 [
   {
