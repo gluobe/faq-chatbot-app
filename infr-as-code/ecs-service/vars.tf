@@ -6,7 +6,19 @@ variable "name" {
   description = "De naam van de ecs service."
 }
 
+variable "launch_type" {
+  description = "The launch type on which to run your service. The valid values are EC2 and FARGATE. Defaults to EC2."
+  default = "EC2"
+}
+variable "deployment_controller" {
+  description = "Configuration block containing deployment controller configuration. Valid values: CODE_DEPLOY, ECS."
+  default = "ECS"
+}
 
+variable "scheduling_strategy" {
+  description = "The scheduling strategy to use for the service. The valid values are REPLICA and DAEMON. Note that Fargate tasks do not support the DAEMON scheduling strategy."
+  default = "REPLICA"
+}
 # varss
 variable "ecs_cluster_id" {
   description = "The ID of the ECS Cluster this ECS Service should run in."

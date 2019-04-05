@@ -9,10 +9,14 @@ resource "aws_ecs_service" "ecs_service" {
   task_definition = "${aws_ecs_task_definition.task_def.arn}"
   desired_count   = "${var.desired_count}"
   iam_role        = "${aws_iam_role.ecs_service_role.arn}"
+  launch_type = "${var.launch_type}"
 
   deployment_minimum_healthy_percent = "${var.deployment_minimum_healthy_percent}"
   deployment_maximum_percent         = "${var.deployment_maximum_percent}"
 
+  deployment_controller {
+    type = "${var.deployment_controller}"
+  }
   load_balancer {
     elb_name       = "${var.elb_naam}"
     container_name = "${var.name}"
@@ -111,4 +115,28 @@ data "aws_iam_policy_document" "ecs_service_policy" {
       "ec2:AuthorizeSecurityGroupIngress",
     ]
   }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# nieuwe taskdef voorbeeld
+# ---------------------------------------------------------------------------------------------------------------------
+resource "aws_ecs_service" "ecs_service2" {
+  name            = "${var.name}"
+  task_definition = "${aws_ecs_task_definition.task_def.arn}"
+  desired_count   = 3
+  launch_type = "${var.launch_type}"
+  scheduling_strategy = "${var.scheduling_strategy}"
+  cluster         = "${var.ecs_cluster_id}"
+  iam_role        = "${aws_iam_role.ecs_service_role.arn}"
+
+  deployment_controller {
+    type = "${var.deployment_controller}"
+  }
+  load_balancer {
+    elb_name = ""
+    target_group_arn = "$nog in te vullen"
+    container_name   = "faq-chat moet van de taskdef komen"
+    container_port   = 3000
+  }
+
 }
