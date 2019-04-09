@@ -1,38 +1,22 @@
 terraform {
   required_version = "> 0.9.0"
 }
-
-# ---------------------------------------------------------------------------------------------------------------------
-#                                                       BITBUCKET
-# ---------------------------------------------------------------------------------------------------------------------
-provider "bitbucket" {
-  username = "simba-black"
-  password = "********"    # you can also use app passwords
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 #                                                          AWS
 # ---------------------------------------------------------------------------------------------------------------------
 provider "aws" {
   region = "${var.region}"
 }
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE THE vpc
-# ---------------------------------------------------------------------------------------------------------------------
-module "vpc_faq_chatbot" {
-  source = "./network"
-}
 
-/*
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE task definition
 # ---------------------------------------------------------------------------------------------------------------------
 module "task_faq_chatbot" {
   source = "./task-def"
 
-  name = "faq-chat"
+  name = "faq_chatbot"
   requires_compatibilities = "EC2"
-  container_name = "faq-chat"
+  container_name = "faq_chatbot"
   image = "292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat:latest"
   containerPort = 3000
 }
@@ -86,6 +70,16 @@ module "fac_chatbot_elb" {
   health_check_path = "health"
 }
 # ---------------------------------------------------------------------------------------------------------------------
+# CREATE lb target group
+# ---------------------------------------------------------------------------------------------------------------------
+
+module "fac_chatbot_lb_tg" {
+  source = "./lb-targed-group"
+
+  name              = "faq-chatbot-tg"
+  vpc_id = "${module.vpc_faq_chatbot.vpc_id}"
+}
+# ---------------------------------------------------------------------------------------------------------------------
 # CREATE ecs service
 # ---------------------------------------------------------------------------------------------------------------------
 module "faq_chatbot_service" {
@@ -93,7 +87,7 @@ module "faq_chatbot_service" {
 
   name = "faq_chatbot"
   ecs_cluster_id = "${module.ecs_cluster_faq_chatbot.ecs_cluster_id}"
-  
+
   image = "292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq_chat"
   image_version = "latest"
   cpu = 1024
@@ -102,10 +96,10 @@ module "faq_chatbot_service" {
   
   container_port = "3000"
   host_port = "80"
-  elb_naam = "${module.fac_chatbot_elb.elb_naam}"
+  elb_tg_arn = "${module.fac_chatbot_lb_tg.target_group_arn}"
 
   num_env_vars = 1
   env_vars = "${map("RACK_ENV", "production")}"
+  task_def_arn = "${module.task_faq_chatbot.task_def_arn}"
 }
- */
 

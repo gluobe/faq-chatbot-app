@@ -54,7 +54,7 @@ variable "desired_count" {
   description = "The number of ECS Tasks to run for this ECS Service."
 }
 
-variable "elb_naam" {
+variable "elb_tg_arn" {
   description = "The name of the ELB with which this ECS Service should register."
 }
 variable "task_def_arn" {
