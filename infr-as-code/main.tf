@@ -61,24 +61,16 @@ module "ecs_cluster_faq_chatbot" {
 # CREATE elb
 # ---------------------------------------------------------------------------------------------------------------------
 
-module "fac_chatbot_elb" {
+module "faq_chatbot_elb" {
   source = "./elb"
   subnet_ids = ["${module.vpc_faq_chatbot.pbl_subnet_a_id}","${module.vpc_faq_chatbot.pbl_subnet_b_id}"]
   name              = "faq-chatbot-elb"
   vpc_id = "${module.vpc_faq_chatbot.vpc_id}"
   instance_port     = "80"
   health_check_path = "health"
-}
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE lb target group
-# ---------------------------------------------------------------------------------------------------------------------
 
-module "fac_chatbot_lb_tg" {
-  source = "./lb-targed-group"
-
-  name              = "faq-chatbot-tg"
-  vpc_id = "${module.vpc_faq_chatbot.vpc_id}"
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE ecs service
 # ---------------------------------------------------------------------------------------------------------------------
@@ -96,7 +88,7 @@ module "faq_chatbot_service" {
   
   container_port = "3000"
   host_port = "80"
-  elb_tg_arn = "${module.fac_chatbot_lb_tg.target_group_arn}"
+  elb_tg_arn = "${module.faq_chatbot_elb.target_group_arn}"
 
   num_env_vars = 1
   env_vars = "${map("RACK_ENV", "production")}"
