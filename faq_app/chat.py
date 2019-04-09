@@ -1,5 +1,6 @@
 from slackeventsapi import SlackEventAdapter
-from faq_app import help, slack
+import slack
+import help
 
 slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events")
 

@@ -1,4 +1,4 @@
-from databanken import databank
+import databank
 
 gevonden_woord = ""
 gevraagd = ""
