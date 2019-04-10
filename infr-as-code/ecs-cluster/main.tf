@@ -133,11 +133,33 @@ data "aws_iam_policy_document" "ecs_cluster_permissions" {
       "ecs:Poll",
       "ecs:RegisterContainerInstance",
       "ecs:StartTelemetrySession",
+      "ecs:UpdateContainerInstancesState",
       "ecs:Submit*",
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
     ]
   }
 }
 
+
+resource "aws_iam_role_policy" "ecs_StartTask_permissions" {
+  name   = "ecs-StartTask-permissions"
+  role   = "${aws_iam_role.ecs_iam_role.id}"
+  policy = "${data.aws_iam_policy_document.ecs_StartTask_permissions.json}"
+}
+
+data "aws_iam_policy_document" "ecs_StartTask_permissions" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+    sid = "VisualEditor0"
+    actions = ["ecs:StartTask",]
+  }
+}
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A SECURITY GROUP THAT CONTROLS WHAT TRAFFIC CAN GO IN AND OUT OF THE CLUSTER
 # We export the ID of the group as an output variable so users of this module can attach custom rules.

@@ -35,8 +35,17 @@ resource "aws_security_group" "lb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-resource "aws_lb_target_group" "elb-tg" {
-  name        = "${var.name}-target"
+resource "aws_lb_target_group" "elb-tg1" {
+  name        = "${var.name}-target1"
+  port        = "8080"
+  protocol    = "HTTP"
+  target_type = "${var.targed_type}"
+  vpc_id      = "${var.vpc_id}"
+  depends_on = ["aws_lb.lb"]
+}
+
+resource "aws_lb_target_group" "elb-tg2" {
+  name        = "${var.name}-target2"
   port        = "${var.port}"
   protocol    = "${var.protocol}"
   target_type = "${var.targed_type}"
@@ -44,13 +53,24 @@ resource "aws_lb_target_group" "elb-tg" {
   depends_on = ["aws_lb.lb"]
 }
 
-resource "aws_lb_listener" "lb_listner" {
+resource "aws_lb_listener" "lb_listner1" {
   load_balancer_arn = "${aws_lb.lb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.elb-tg.arn}"
+    target_group_arn = "${aws_lb_target_group.elb-tg1.arn}"
+  }
+}
+
+resource "aws_lb_listener" "lb_listner2" {
+  load_balancer_arn = "${aws_lb.lb.arn}"
+  port              = "8080"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.elb-tg2.arn}"
   }
 }

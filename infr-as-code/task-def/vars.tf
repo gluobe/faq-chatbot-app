@@ -9,12 +9,12 @@ variable "requires_compatibilities" {
 
 variable "task_cpu" {
   description = "The number of cpu units used by the task."
-  default     = "1 vCPU"
+  default     = "256"
 }
 
 variable "task_memory" {
   description = "The amount (in MiB) of memory used by the task."
-  default     = "2"
+  default     = "512"
 }
 
 variable "containerPort" {
@@ -33,4 +33,8 @@ variable "container_name" {
 
 variable "image" {
   description = "The image to use (ex: repository-url/image:tag)"
+}
+variable "network_mode" {
+  description = "The Docker networking mode to use for the containers in the task. The valid values are none, bridge, awsvpc, and host."
+  default = "host"
 }

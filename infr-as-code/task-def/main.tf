@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "task-def-iam-role" {
-  name = "test_role"
+  name = "${var.name}-task-aim-role"
 
   assume_role_policy = <<EOF
 {
@@ -33,6 +33,7 @@ resource "aws_ecs_task_definition" "task-def" {
   memory                   = "${var.task_memory}"
   task_role_arn            = "${aws_iam_role.task-def-iam-role.arn}"
   execution_role_arn       = "arn:aws:iam::292242131230:role/ecsTaskExecutionRole"
+  network_mode = "${var.network_mode}"
 
   container_definitions = <<DEFINITION
 [
@@ -40,7 +41,6 @@ resource "aws_ecs_task_definition" "task-def" {
     "name": "${var.container_name}",
     "image": "${var.image}",
     "essential": true,
-    "cpu": 128,
     "portMappings": [
       {
         "containerPort": ${var.containerPort},

@@ -13,7 +13,7 @@ variable "launch_type" {
 
 variable "deployment_controller" {
   description = "Configuration block containing deployment controller configuration. Valid values: CODE_DEPLOY, ECS."
-  default     = "ECS"
+  default     = "CODE_DEPLOY"
 }
 
 variable "scheduling_strategy" {
