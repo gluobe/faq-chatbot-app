@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lb" "lb" {
-  name       = "${var.name}-lb"
+  name               = "${var.name}-lb"
   internal           = false
   subnets            = ["${var.subnet_ids}"]
   security_groups    = ["${aws_security_group.lb_sg.id}"]
@@ -13,7 +13,7 @@ resource "aws_lb" "lb" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE A SECURITY GROUP THAT CONTROLS WHAT TRAFFIC CAN GO IN AND OUT OF THE ELB
+# CREATE A SECURITY GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_security_group" "lb_sg" {
@@ -35,13 +35,17 @@ resource "aws_security_group" "lb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A TARGET GROUP
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_lb_target_group" "elb-tg1" {
   name        = "${var.name}-target1"
   port        = "8080"
   protocol    = "HTTP"
   target_type = "${var.targed_type}"
   vpc_id      = "${var.vpc_id}"
-  depends_on = ["aws_lb.lb"]
+  depends_on  = ["aws_lb.lb"]
 }
 
 resource "aws_lb_target_group" "elb-tg2" {
@@ -50,8 +54,11 @@ resource "aws_lb_target_group" "elb-tg2" {
   protocol    = "${var.protocol}"
   target_type = "${var.targed_type}"
   vpc_id      = "${var.vpc_id}"
-  depends_on = ["aws_lb.lb"]
+  depends_on  = ["aws_lb.lb"]
 }
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A LISTENER
+# ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lb_listener" "lb_listner1" {
   load_balancer_arn = "${aws_lb.lb.arn}"

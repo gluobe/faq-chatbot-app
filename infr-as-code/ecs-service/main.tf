@@ -1,6 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE AN ECS SERVICE TO RUN A LONG-RUNNING ECS TASK
-# We also associate the ECS Service with an ELB, which can distribute traffic across the ECS Tasks.
+# CREATE AN ECS SERVICE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_ecs_service" "ecs_service" {
@@ -19,43 +18,13 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   load_balancer {
-
-    target_group_arn       = "${var.elb_tg_arn}"
-    container_name = "${var.name}"
-    container_port = "${var.container_port}"
+    target_group_arn = "${var.elb_tg_arn}"
+    container_name   = "${var.name}"
+    container_port   = "${var.container_port}"
   }
 
   depends_on = ["aws_iam_role_policy.ecs_service_policy"]
-
 }
-/*
-# ---------------------------------------------------------------------------------------------------------------------
-#
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# nieuwe taskdef voorbeeld
-# ---------------------------------------------------------------------------------------------------------------------
-resource "aws_ecs_service" "ecs_service2" {
-  name                = "${var.name}"
-  task_definition     = "${var.task_def_arn}"
-  desired_count       = 3
-  launch_type         = "${var.launch_type}"
-  scheduling_strategy = "${var.scheduling_strategy}"
-  cluster             = "${var.ecs_cluster_id}"
-  iam_role            = "${aws_iam_role.ecs_service_role.arn}"
-
-  deployment_controller {
-    type = "${var.deployment_controller}"
-  }
-
-  load_balancer {
-    elb_name         = ""
-    target_group_arn = "$nog in te vullen"
-    container_name   = "faq-chat moet van de taskdef komen"
-    container_port   = 3000
-  }
-}
-*/
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN IAM ROLE FOR THE ECS SERVICE
 # ---------------------------------------------------------------------------------------------------------------------
@@ -79,7 +48,6 @@ data "aws_iam_policy_document" "ecs_service_role" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ATTACH IAM PERMISSIONS TO THE IAM ROLE
-# This IAM Policy allows the ECS Service to communicate with EC2 Instances.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "ecs_service_policy" {
@@ -103,4 +71,8 @@ data "aws_iam_policy_document" "ecs_service_policy" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "attach" {
+  policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
+  role = "${aws_iam_role.ecs_service_role.name}"
+}
 

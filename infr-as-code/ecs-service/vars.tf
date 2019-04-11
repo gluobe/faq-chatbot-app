@@ -57,6 +57,7 @@ variable "desired_count" {
 variable "elb_tg_arn" {
   description = "The name of the ELB with which this ECS Service should register."
 }
+
 variable "task_def_arn" {
   description = "De naam van de task definition."
 }
@@ -65,17 +66,6 @@ variable "task_def_arn" {
 # OPTIONAL MODULE PARAMETERS
 # These variables have defaults, but may be overridden by the operator.
 # ---------------------------------------------------------------------------------------------------------------------
-
-variable "env_vars" {
-  description = "The environment variables to make available in each ECS Task. Any time you update this variable, make sure to update var.num_env_vars too!"
-  type        = "map"
-  default     = {}
-}
-
-variable "num_env_vars" {
-  description = "The number of environment variables in var.env_vars. We should be able to compute this automatically, but can't due to a limitation where Terraform cannot compute count on dynamic data: https://github.com/hashicorp/terraform/issues/12570."
-  default     = 0
-}
 
 variable "deployment_maximum_percent" {
   description = "The upper limit, as a percentage of var.desired_count, of the number of running ECS Tasks that can be running in a service during a deployment. Setting this to more than 100 means that during deployment, ECS will deploy new instances of a Task before undeploying the old ones."

@@ -2,12 +2,14 @@
 #               deploy-app
 #-----------------------------------------------------------------------------------------------------------------------
 resource "aws_codedeploy_app" "codedeploy-app" {
-  compute_platform = "${var.compute_platform}-app"
-  name             = "${var.name}"
+  compute_platform = "${var.compute_platform}"
+  name             = "${var.name}-app"
 }
+
 #-----------------------------------------------------------------------------------------------------------------------
 #               deployment group
 #-----------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------AIM-role-------------------------------------------------------------------
 resource "aws_iam_role" "codedeploy-iam-role" {
   name = "${var.name}-dpg-role"
 
@@ -25,24 +27,59 @@ resource "aws_iam_role" "codedeploy-iam-role" {
     }
   ]
 }
+
 EOF
 }
 
+#----------------------------------------policy-attachment--------------------------------------------------------------
 resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
   role       = "${aws_iam_role.codedeploy-iam-role.name}"
 }
 
+resource "aws_iam_role_policy" "awscodedeployecsPol" {
+  name = "test_policy"
+  role = "${aws_iam_role.codedeploy-iam-role.name}"
 
-resource "aws_codedeploy_deployment_group" "example" {
-  app_name              = "${aws_codedeploy_app.codedeploy-app.name}"
-  deployment_group_name = "${var.name}-deployment-group"
-  service_role_arn      = "${aws_iam_role.codedeploy-iam-role.arn}"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ecs:DescribeServices",
+                "ecs:CreateTaskSet",
+                "ecs:UpdateServicePrimaryTaskSet",
+                "ecs:DeleteTaskSet",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:DescribeRules",
+                "elasticloadbalancing:ModifyRule",
+                "lambda:InvokeFunction",
+                "cloudwatch:DescribeAlarms",
+                "sns:Publish",
+                "s3:GetObject",
+                "s3:GetObjectMetadata",
+                "s3:GetObjectVersion"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
 
-  auto_rollback_configuration {
-    enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
-  }
+EOF
+}
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A DEPLOYMENT GROUP
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_codedeploy_deployment_group" "deplyment_group" {
+  app_name               = "${aws_codedeploy_app.codedeploy-app.name}"
+  deployment_group_name  = "${var.name}-deployment-group"
+  service_role_arn       = "${aws_iam_role.codedeploy-iam-role.arn}"
+  deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
 
   blue_green_deployment_config {
     deployment_ready_option {
@@ -56,27 +93,27 @@ resource "aws_codedeploy_deployment_group" "example" {
   }
 
   deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+    deployment_option = "${var.deployment_option}"
+    deployment_type   = "${var.deployment_type  }"
   }
 
   ecs_service {
-    cluster_name = "${aws_ecs_cluster.example.name}"
-    service_name = "${aws_ecs_service.example.name}"
+    cluster_name = "${var.cluster_name}"
+    service_name = "${var.service_name}"
   }
 
   load_balancer_info {
     target_group_pair_info {
       prod_traffic_route {
-        listener_arns = ["${aws_lb_listener.example.arn}"]
+        listener_arns = ["${var.listener_arns}"]
       }
 
       target_group {
-        name = "${aws_lb_target_group.blue.name}"
+        name = "${var.target_group_name1}"
       }
 
       target_group {
-        name = "${aws_lb_target_group.green.name}"
+        name = "${var.target_group_name2}"
       }
     }
   }

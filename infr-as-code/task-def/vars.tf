@@ -34,7 +34,8 @@ variable "container_name" {
 variable "image" {
   description = "The image to use (ex: repository-url/image:tag)"
 }
+
 variable "network_mode" {
   description = "The Docker networking mode to use for the containers in the task. The valid values are none, bridge, awsvpc, and host."
-  default = "host"
+  default     = "host"
 }

@@ -8,7 +8,6 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AN AUTO SCALING GROUP (ASG)
-# Each EC2 Instance in the ASG will register as an ECS Cluster Instance.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_autoscaling_group" "ecs_autoscaling_group" {
@@ -18,18 +17,15 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
   launch_configuration = "${aws_launch_configuration.ecs_launch_config.name}"
   vpc_zone_identifier  = ["${var.subnet_ids}"]
 
-  tag {
+   tag {
     key                 = "Name"
     value               = "${var.name}"
     propagate_at_launch = true
   }
 }
-
-# Fetch the AWS ECS Optimized Linux AMI. Note that if you've never launched this AMI before, you have to accept the
-# terms and conditions on this webpage or the EC2 instances will fail to launch:
-# https://aws.amazon.com/marketplace/pp/B00U6QTYI2
-
-# controleren hoe dit juist werkt
+# ---------------------------------------------------------------------------------------------------------------------
+# AMI
+# ---------------------------------------------------------------------------------------------------------------------
 data "aws_ami" "ecs_ami" {
   most_recent = true
   owners      = ["amazon"]
@@ -39,9 +35,9 @@ data "aws_ami" "ecs_ami" {
     values = ["amzn-ami-*-amazon-ecs-optimized"]
   }
 }
-
-# The launch configuration for each EC2 Instance that will run in the ECS
-# Cluster
+# ---------------------------------------------------------------------------------------------------------------------
+# launch configuration
+# ---------------------------------------------------------------------------------------------------------------------
 resource "aws_launch_configuration" "ecs_launch_config" {
   name                 = "${var.name}"
   instance_type        = "${var.instance_type}"
@@ -50,21 +46,11 @@ resource "aws_launch_configuration" "ecs_launch_config" {
   security_groups      = ["${aws_security_group.ecs_security_group.id}"]
   image_id             = "${data.aws_ami.ecs_ami.id}"
 
-  # A shell script that will execute when on each EC2 instance when it first boots to configure the ECS Agent to talk
-  # to the right ECS cluster
   user_data = <<EOF
 #!/bin/bash
 echo "ECS_CLUSTER=${var.name}" >> /etc/ecs/ecs.config
 EOF
 
-  # Important note: whenever using a launch configuration with an auto scaling
-  # group, you must set create_before_destroy = true. However, as soon as you
-  # set create_before_destroy = true in one resource, you must also set it in
-  # every resource that it depends on, or you'll get an error about cyclic
-  # dependencies (especially when removing resources). For more info, see:
-  #
-  # https://www.terraform.io/docs/providers/aws/r/launch_configuration.html
-  # https://terraform.io/docs/configuration/resources.html
   lifecycle {
     create_before_destroy = true
   }
@@ -72,7 +58,6 @@ EOF
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN IAM ROLE FOR EACH INSTANCE IN THE CLUSTER
-# We export the IAM role ID as an output variable so users of this module can attach custom policies.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "ecs_iam_role" {
@@ -98,22 +83,14 @@ data "aws_iam_policy_document" "ecs_policy_doc" {
   }
 }
 
-# To attach an IAM Role to an EC2 Instance, you use an IAM Instance Profile
 resource "aws_iam_instance_profile" "ecs_iam_instance_profile" {
   name = "${var.name}"
   role = "${aws_iam_role.ecs_iam_role.name}"
 
-  # aws_launch_configuration.ecs_instance sets create_before_destroy to true, which means every resource it depends on,
-  # including this one, must also set the create_before_destroy flag to true, or you'll get a cyclic dependency error.
-  lifecycle {
+ lifecycle {
     create_before_destroy = true
   }
 }
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ATTACH IAM POLICIES TO THE IAM ROLE
-# The IAM policy allows an ECS Agent running on each EC2 Instance to communicate with the ECS scheduler.
-# ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "ecs_cluster_permissions" {
   name   = "ecs-cluster-permissions"
@@ -140,11 +117,10 @@ data "aws_iam_policy_document" "ecs_cluster_permissions" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
   }
 }
-
 
 resource "aws_iam_role_policy" "ecs_StartTask_permissions" {
   name   = "ecs-StartTask-permissions"
@@ -156,22 +132,16 @@ data "aws_iam_policy_document" "ecs_StartTask_permissions" {
   statement {
     effect    = "Allow"
     resources = ["*"]
-    sid = "VisualEditor0"
-    actions = ["ecs:StartTask",]
+    sid       = "VisualEditor0"
+    actions   = ["ecs:StartTask"]
   }
 }
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE A SECURITY GROUP THAT CONTROLS WHAT TRAFFIC CAN GO IN AND OUT OF THE CLUSTER
-# We export the ID of the group as an output variable so users of this module can attach custom rules.
-# ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_security_group" "ecs_security_group" {
   name        = "${var.name}"
   description = "Security group for the EC2 instances in the ECS cluster ${var.name}"
   vpc_id      = "${var.vpc_id}"
 
-  # aws_launch_configuration.ecs_instance sets create_before_destroy to true, which means every resource it depends on,
-  # including this one, must also set the create_before_destroy flag to true, or you'll get a cyclic dependency error.
   lifecycle {
     create_before_destroy = true
   }

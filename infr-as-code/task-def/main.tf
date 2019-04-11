@@ -33,7 +33,7 @@ resource "aws_ecs_task_definition" "task-def" {
   memory                   = "${var.task_memory}"
   task_role_arn            = "${aws_iam_role.task-def-iam-role.arn}"
   execution_role_arn       = "arn:aws:iam::292242131230:role/ecsTaskExecutionRole"
-  network_mode = "${var.network_mode}"
+  network_mode             = "${var.network_mode}"
 
   container_definitions = <<DEFINITION
 [

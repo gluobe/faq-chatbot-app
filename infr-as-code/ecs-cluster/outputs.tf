@@ -17,3 +17,7 @@ output "iam_role_name" {
 output "asg_name" {
   value = "${aws_autoscaling_group.ecs_autoscaling_group.name}"
 }
+
+output "cluster_name" {
+  value = "${aws_ecs_cluster.ecs_cluster.name}"
+}
