@@ -4,6 +4,11 @@
 
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "${var.name}"
+
+  tags = {
+    Name    = "ecr_cluster"
+    Project = "${var.project_naam}"
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -17,12 +22,12 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
   launch_configuration = "${aws_launch_configuration.ecs_launch_config.name}"
   vpc_zone_identifier  = ["${var.subnet_ids}"]
 
-   tag {
-    key                 = "Name"
-    value               = "${var.name}"
-    propagate_at_launch = true
+  tags = {
+    Name    = "autoscaling_group"
+    Project = "${var.project_naam}"
   }
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # AMI
 # ---------------------------------------------------------------------------------------------------------------------
@@ -32,9 +37,15 @@ data "aws_ami" "ecs_ami" {
 
   filter {
     name   = "name"
-    values = ["amzn-ami-*-amazon-ecs-optimized"]
+    values = ["*amazon-ecs-optimized"]
+  }
+
+  tags = {
+    Name    = "ecs_ami"
+    Project = "${var.project_naam}"
   }
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # launch configuration
 # ---------------------------------------------------------------------------------------------------------------------
@@ -45,6 +56,11 @@ resource "aws_launch_configuration" "ecs_launch_config" {
   iam_instance_profile = "${aws_iam_instance_profile.ecs_iam_instance_profile.name}"
   security_groups      = ["${aws_security_group.ecs_security_group.id}"]
   image_id             = "${data.aws_ami.ecs_ami.id}"
+
+  tags = {
+    Name    = "launch_configuration"
+    Project = "${var.project_naam}"
+  }
 
   user_data = <<EOF
 #!/bin/bash
@@ -69,6 +85,11 @@ resource "aws_iam_role" "ecs_iam_role" {
   lifecycle {
     create_before_destroy = true
   }
+
+  tags = {
+    Name    = "ecs_iam_role"
+    Project = "${var.project_naam}"
+  }
 }
 
 data "aws_iam_policy_document" "ecs_policy_doc" {
@@ -87,7 +108,12 @@ resource "aws_iam_instance_profile" "ecs_iam_instance_profile" {
   name = "${var.name}"
   role = "${aws_iam_role.ecs_iam_role.name}"
 
- lifecycle {
+  tags = {
+    Name    = "ecs_iam_instance_profile"
+    Project = "${var.project_naam}"
+  }
+
+  lifecycle {
     create_before_destroy = true
   }
 }
@@ -144,6 +170,11 @@ resource "aws_security_group" "ecs_security_group" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  tags = {
+    Name    = "ecs_security_group"
+    Project = "${var.project_naam}"
   }
 }
 

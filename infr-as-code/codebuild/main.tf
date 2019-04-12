@@ -4,6 +4,11 @@
 resource "aws_iam_role" "codebuild_iam_role" {
   name = "${var.name}"
 
+  tags = {
+    Name    = "codebuild_iam_role"
+    Project = "${var.project_naam}"
+  }
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -108,6 +113,7 @@ resource "aws_iam_role_policy" "codebuild_iam_policy" {
 }
 POLICY
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A CODEBUIKD PROJECT
 # ---------------------------------------------------------------------------------------------------------------------
@@ -115,6 +121,11 @@ resource "aws_codebuild_project" "codebuild_project" {
   name          = "${var.name}"
   build_timeout = "5"
   service_role  = "${aws_iam_role.codebuild_iam_role.arn}"
+
+  tags = {
+    Name    = "codebuild_project"
+    Project = "${var.project_naam}"
+  }
 
   artifacts {
     type = "NO_ARTIFACTS"
@@ -135,10 +146,16 @@ resource "aws_codebuild_project" "codebuild_project" {
   }
 
   tags = {
-    "Environment" = "Test"
+    Name    = "VPC-faq-chatbot"
+    Project = "${var.name}"
   }
 }
 
 resource "aws_codebuild_webhook" "bitbucket_webhook" {
   project_name = "${aws_codebuild_project.codebuild_project.name}"
+
+  tags = {
+    Name    = "bidbucket_webhook"
+    Project = "${var.project_naam}"
+  }
 }

@@ -10,6 +10,11 @@ resource "aws_lb" "lb" {
   load_balancer_type = "application"
 
   enable_deletion_protection = false
+
+  tags = {
+    Name    = "lb"
+    Project = "${var.project_naam}"
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -34,7 +39,13 @@ resource "aws_security_group" "lb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name    = "lb_sg"
+    Project = "${var.project_naam}"
+  }
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A TARGET GROUP
 # ---------------------------------------------------------------------------------------------------------------------
@@ -46,6 +57,11 @@ resource "aws_lb_target_group" "elb-tg1" {
   target_type = "${var.targed_type}"
   vpc_id      = "${var.vpc_id}"
   depends_on  = ["aws_lb.lb"]
+
+  tags = {
+    Name    = "lb_tg1"
+    Project = "${var.project_naam}"
+  }
 }
 
 resource "aws_lb_target_group" "elb-tg2" {
@@ -55,7 +71,13 @@ resource "aws_lb_target_group" "elb-tg2" {
   target_type = "${var.targed_type}"
   vpc_id      = "${var.vpc_id}"
   depends_on  = ["aws_lb.lb"]
+
+  tags = {
+    Name    = "lb_tg2"
+    Project = "${var.project_naam}"
+  }
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A LISTENER
 # ---------------------------------------------------------------------------------------------------------------------
@@ -69,6 +91,11 @@ resource "aws_lb_listener" "lb_listner1" {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.elb-tg1.arn}"
   }
+
+  tags = {
+    Name    = "lb_listner1"
+    Project = "${var.project_naam}"
+  }
 }
 
 resource "aws_lb_listener" "lb_listner2" {
@@ -79,5 +106,10 @@ resource "aws_lb_listener" "lb_listner2" {
   default_action {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.elb-tg2.arn}"
+  }
+
+  tags = {
+    Name    = "lb_listner2"
+    Project = "${var.project_naam}"
   }
 }

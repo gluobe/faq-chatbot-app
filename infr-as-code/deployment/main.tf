@@ -4,6 +4,11 @@
 resource "aws_codedeploy_app" "codedeploy-app" {
   compute_platform = "${var.compute_platform}"
   name             = "${var.name}-app"
+
+  tags = {
+    Name    = "codedeploy-app"
+    Project = "${var.project_naam}"
+  }
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -12,6 +17,11 @@ resource "aws_codedeploy_app" "codedeploy-app" {
 #--------------------------------------------AIM-role-------------------------------------------------------------------
 resource "aws_iam_role" "codedeploy-iam-role" {
   name = "${var.name}-dpg-role"
+
+  tags = {
+    Name    = "codedeploy-iam-role"
+    Project = "${var.project_naam}"
+  }
 
   assume_role_policy = <<EOF
 {
@@ -71,6 +81,7 @@ resource "aws_iam_role_policy" "awscodedeployecsPol" {
 
 EOF
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A DEPLOYMENT GROUP
 # ---------------------------------------------------------------------------------------------------------------------
@@ -80,6 +91,11 @@ resource "aws_codedeploy_deployment_group" "deplyment_group" {
   deployment_group_name  = "${var.name}-deployment-group"
   service_role_arn       = "${aws_iam_role.codedeploy-iam-role.arn}"
   deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
+
+  tags = {
+    Name    = "deployment_group"
+    Project = "${var.project_naam}"
+  }
 
   blue_green_deployment_config {
     deployment_ready_option {

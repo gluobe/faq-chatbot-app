@@ -24,7 +24,13 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   depends_on = ["aws_iam_role_policy.ecs_service_policy"]
+
+  tags = {
+    Name    = "ecs_service"
+    Project = "${var.project_naam}"
+  }
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN IAM ROLE FOR THE ECS SERVICE
 # ---------------------------------------------------------------------------------------------------------------------
@@ -32,6 +38,11 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_iam_role" "ecs_service_role" {
   name               = "${var.name}"
   assume_role_policy = "${data.aws_iam_policy_document.ecs_service_role.json}"
+
+  tags = {
+    Name    = "ecs_service_role"
+    Project = "${var.project_naam}"
+  }
 }
 
 data "aws_iam_policy_document" "ecs_service_role" {
@@ -73,6 +84,5 @@ data "aws_iam_policy_document" "ecs_service_policy" {
 
 resource "aws_iam_role_policy_attachment" "attach" {
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-  role = "${aws_iam_role.ecs_service_role.name}"
+  role       = "${aws_iam_role.ecs_service_role.name}"
 }
-

@@ -33,3 +33,8 @@ variable "target_group_name1" {
 variable "target_group_name2" {
   description = "Name of the target group."
 }
+
+variable "project_naam" {
+  default     = "Faq-chatbot"
+  description = "The global project name"
+}

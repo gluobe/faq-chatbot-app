@@ -68,7 +68,7 @@ module "ecs_cluster_faq_chatbot" {
     "${module.vpc_faq_chatbot.pbl_subnet_a_id}",
     "${module.vpc_faq_chatbot.pbl_subnet_b_id}",
     "${module.vpc_faq_chatbot.prv_subnet_a_id}",
-    "${module.vpc_faq_chatbot.prv_subnet_b_id}"
+    "${module.vpc_faq_chatbot.prv_subnet_b_id}",
   ]
 }
 
@@ -77,7 +77,7 @@ module "ecs_cluster_faq_chatbot" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "faq_chatbot_elb" {
-  source            = "./elb"
+  source = "./elb"
 
   subnet_ids        = ["${module.vpc_faq_chatbot.pbl_subnet_a_id}", "${module.vpc_faq_chatbot.pbl_subnet_b_id}"]
   name              = "faq-chatbot-elb"
@@ -99,7 +99,7 @@ module "faq_chatbot_service" {
   image_version = "latest"
   cpu           = 1024
   memory        = 768
-  desired_count = 2
+  desired_count = 3
 
   container_port = "80"
   host_port      = "80"

@@ -39,3 +39,8 @@ variable "network_mode" {
   description = "The Docker networking mode to use for the containers in the task. The valid values are none, bridge, awsvpc, and host."
   default     = "host"
 }
+
+variable "project_naam" {
+  default     = "Faq-chatbot"
+  description = "The global project name"
+}

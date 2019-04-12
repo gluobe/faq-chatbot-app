@@ -5,6 +5,11 @@
 resource "aws_iam_role" "task-def-iam-role" {
   name = "${var.name}-task-aim-role"
 
+  tags = {
+    Name    = "task-def-iam-role"
+    Project = "${var.project_naam}"
+  }
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -34,6 +39,11 @@ resource "aws_ecs_task_definition" "task-def" {
   task_role_arn            = "${aws_iam_role.task-def-iam-role.arn}"
   execution_role_arn       = "arn:aws:iam::292242131230:role/ecsTaskExecutionRole"
   network_mode             = "${var.network_mode}"
+
+  tags = {
+    Name    = "task-def"
+    Project = "${var.project_naam}"
+  }
 
   container_definitions = <<DEFINITION
 [
