@@ -4,11 +4,6 @@
 resource "aws_codedeploy_app" "codedeploy-app" {
   compute_platform = "${var.compute_platform}"
   name             = "${var.name}-app"
-
-  tags = {
-    Name    = "codedeploy-app"
-    Project = "${var.project_naam}"
-  }
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -91,11 +86,6 @@ resource "aws_codedeploy_deployment_group" "deplyment_group" {
   deployment_group_name  = "${var.name}-deployment-group"
   service_role_arn       = "${aws_iam_role.codedeploy-iam-role.arn}"
   deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
-
-  tags = {
-    Name    = "deployment_group"
-    Project = "${var.project_naam}"
-  }
 
   blue_green_deployment_config {
     deployment_ready_option {

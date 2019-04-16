@@ -91,11 +91,6 @@ resource "aws_lb_listener" "lb_listner1" {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.elb-tg1.arn}"
   }
-
-  tags = {
-    Name    = "lb_listner1"
-    Project = "${var.project_naam}"
-  }
 }
 
 resource "aws_lb_listener" "lb_listner2" {
@@ -106,10 +101,5 @@ resource "aws_lb_listener" "lb_listner2" {
   default_action {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.elb-tg2.arn}"
-  }
-
-  tags = {
-    Name    = "lb_listner2"
-    Project = "${var.project_naam}"
   }
 }

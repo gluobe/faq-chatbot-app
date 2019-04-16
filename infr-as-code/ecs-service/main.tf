@@ -25,10 +25,6 @@ resource "aws_ecs_service" "ecs_service" {
 
   depends_on = ["aws_iam_role_policy.ecs_service_policy"]
 
-  tags = {
-    Name    = "ecs_service"
-    Project = "${var.project_naam}"
-  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -143,6 +143,9 @@ resource "aws_codebuild_project" "codebuild_project" {
     type            = "BITBUCKET"
     location        = "https://simba-black@bitbucket.org/xploregroup/gluo-faq-chatbot.git"
     git_clone_depth = 1
+    auth {
+      type = "OAUTH"
+    }
   }
 
   tags = {
@@ -150,12 +153,6 @@ resource "aws_codebuild_project" "codebuild_project" {
     Project = "${var.name}"
   }
 }
-
-resource "aws_codebuild_webhook" "bitbucket_webhook" {
+resource "aws_codebuild_webhook" "bitbucket" {
   project_name = "${aws_codebuild_project.codebuild_project.name}"
-
-  tags = {
-    Name    = "bidbucket_webhook"
-    Project = "${var.project_naam}"
-  }
 }
