@@ -108,6 +108,7 @@ resource "aws_codedeploy_deployment_group" "deplyment_group" {
     service_name = "${var.service_name}"
   }
 
+
   load_balancer_info {
     target_group_pair_info {
       prod_traffic_route {

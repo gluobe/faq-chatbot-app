@@ -14,7 +14,7 @@ variable "task_cpu" {
 
 variable "task_memory" {
   description = "The amount (in MiB) of memory used by the task."
-  default     = "512"
+  default     = "64"
 }
 
 variable "containerPort" {
