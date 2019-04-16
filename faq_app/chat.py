@@ -2,6 +2,8 @@ from slackeventsapi import SlackEventAdapter
 import slack
 import help
 
+# testcomment
+
 slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events")
 
 
