@@ -17,5 +17,3 @@ phases:
       - printf '[{"name":"faq_chatbot","imageUri":"292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat"}]' > imagedefinitions.json
 artifacts:
   file: imagedefinitions.json
-
-  - printf '[{"name":"faq_chatbot","imageUri":"292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat"}]' > imagedefinitions.json
