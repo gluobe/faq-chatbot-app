@@ -14,7 +14,7 @@ phases:
       - echo build Docker image klaar
       - echo push image
       - docker push 292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat:latest
-      - printf "[{"name":"faq_chatbot","imageUri":"292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat"}]" > imagedefinitions.json
-      - echo "[{"name":"faq_chatbot","imageUri":"292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat"}]" > imagedefinitions2.json
+      - printf '[{"name":"faq_chatbot","imageUri":"292242131230.dkr.ecr.eu-west-2.amazonaws.com/faq-chat"}]' > imagedefinitions.json
 artifacts:
-  file: imagedefinitions2.json
+  file:
+    - imagedefinitions.json
