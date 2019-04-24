@@ -134,9 +134,3 @@ insert_in_to_links(7, "codebuild", "https://docs.aws.amazon.com/codebuild/index.
 insert_in_to_links(7, "codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
 insert_in_to_links(7, "docker", "https://docs.docker.com/")
 insert_in_to_links(7, "terraform", "https://www.terraform.io/intro/index.html")
-
-
-titel = "python"
-sleutel = "documentatie"
-
-print(get_link(titel, sleutel))

@@ -52,7 +52,3 @@ def get_link():
                 link = "Ik weet niet welke documentatie u zoekt, ik heb volgende documentatie links: \n" \
                        + databank.get_titel_en_links()
     return link
-
-
-print(check_for_word("waar kan ik de documentatie vinden over python"))
-print(get_bericht())

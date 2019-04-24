@@ -13,4 +13,4 @@ setuptools
 six
 slacker
 slackeventsapi
-urllib3
+urllib3==1.21.1
