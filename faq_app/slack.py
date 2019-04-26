@@ -1,8 +1,9 @@
 from slacker import Slacker
 from slackeventsapi import SlackEventAdapter
+import os
 
-servicedesk = Slacker('xoxb-555682767666-559725976260-rT43VnxURmv5vqWf4yBywfr2')
-slack_signing_secret = "c6746653654493e16297fd7c04913564"
+servicedesk = Slacker(os.getenv('SLACK_ACCES_TOKEN'))
+slack_signing_secret = os.getenv('SLACK_SECRET')
 slack_events_adapter = SlackEventAdapter(slack_signing_secret, "/slack/events")
 
 

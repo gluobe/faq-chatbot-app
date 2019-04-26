@@ -1,5 +1,6 @@
 import unittest
 import help
+import os
 
 
 class Testhelp(unittest.TestCase):
@@ -24,6 +25,9 @@ class Testhelp(unittest.TestCase):
     def test_sleutels_str(self):
         self.assertIsInstance(help.sleutels_str(), str)
 
+    print(os.getenv('GITHUB_TOKEN'))
+
 
 if __name__ == "__main__":
     unittest.main()
+
