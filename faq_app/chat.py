@@ -3,8 +3,6 @@ import slack
 import help
 from flask import Flask
 
-# testcomment
-
 app = Flask(__name__)
 
 
@@ -12,7 +10,7 @@ app = Flask(__name__)
 def hello():
     return "The connection is healthy!!!!!"
 
-
+app.
 slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events", app)
 
 # Deze functie reageerd als in de chat gepost is, men gaan de texr ophallen en antwoorden indien nodig
@@ -32,6 +30,5 @@ def error_handler(err):
 
 
 # starten van de Flask server op port 3000 met de default /events
-# slack_events_adapter.start(host="0.0.0.0")
 if __name__ == "__main__":
     app.run(port=3000, host="0.0.0.0")

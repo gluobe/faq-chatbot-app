@@ -33,6 +33,7 @@ def get_bericht():
 
 
 # neemt de array van sleutelwoorden en zet die om in 1 string
+# de "*" aan het begin en het einde van het woord maken de tekst vet in slack
 def sleutels_str():
     string = ""
     for i in databank.get_sleutels():
@@ -40,7 +41,7 @@ def sleutels_str():
     return string
 
 
-# zoekt een "titel" in de opgegeven zin en geef geeft het door naar de databank, de databank geeft een link terug
+# zoekt een "titel" in de opgegeven zin en geeft het door naar de databank, de databank geeft een link terug
 def get_link():
     global link
     for i in databank.get_titels():

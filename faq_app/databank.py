@@ -15,7 +15,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS antwoorden (
 cursor.execute("""CREATE TABLE IF NOT EXISTS sleutelwoorden (
                 sleutelw_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 antwoord_ID INTEGER REFERENCES antwoorden(antwoord_ID),
-                sleutel TEXT NOT NULL
+                sleutel TEXT NOT NULL UNIQUE
                 );""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS links (
@@ -72,6 +72,15 @@ def get_links():
     return db_to_array(cursor.execute("SELECT link FROM links").fetchall())
 
 
+def get_titel_en_links():
+    teller = 0
+    titelsenlinks = ""
+    while teller <= get_titels().__len__() - 1:
+        titelsenlinks += (get_titels()[teller] + " - " + get_links()[teller] + "\n")
+        teller += 1
+    return titelsenlinks
+
+
 def get_antwoorden():
     return db_to_array(cursor.execute("SELECT antwoord FROM antwoorden").fetchall())
 
@@ -81,18 +90,9 @@ def get_antwoord(vraag):
                           " WHERE sleutel = :sleutel)", {'sleutel': vraag}).fetchone()[0]
 
 
-def get_titel_en_links():
-    teller = 0
-    titelsenlinks =""
-    while teller <= get_titels().__len__() - 1:
-        titelsenlinks += (get_titels()[teller] + " - " + get_links()[teller] + "\n")
-        teller += 1
-    return titelsenlinks
-
-
 def get_link(titel,sleutel):
     return cursor.execute("SELECT link FROM links WHERE titel = :titel and sleutelw_ID = (select sleutelw_ID from "
-                          "sleutelwoorden where sleutel = :sleutel)", {'titel': titel, 'sleutel': sleutel}).fetchone()[0]
+                          "sleutelwoorden where sleutel = :sleutel)", {'titel': titel.lower(), 'sleutel': sleutel.lower()}).fetchone()[0]
 
 
 # help functies
@@ -107,30 +107,43 @@ def db_to_array(cursor_execut_fa):
     return arr
 
 
-# insert values
-insert_in_to_antwoorden("hallo, hoe gaat het?")
-insert_in_to_antwoorden("help nodig?")
-insert_in_to_antwoorden("De status van de server is \"Online\".")
-insert_in_to_antwoorden("De server staat aan")
-insert_in_to_antwoorden("De server staat uit")
-insert_in_to_antwoorden("hier is de lijst van de keywoorden:")
-insert_in_to_antwoorden(" documentatie vind je op volgende link: ")
+def vullen():
+    global ant
+    if(db_to_array(cursor.execute("SELECT count(*) from sleutelwoorden").fetchall())[0]) == 0:
+        # insert values
+        insert_in_to_antwoorden("hallo, hoe gaat het?")
+        insert_in_to_antwoorden("hulp nodig?")
+        insert_in_to_antwoorden("De status van de server is \"Online\".")
+        insert_in_to_antwoorden("De server staat aan")
+        insert_in_to_antwoorden("De server staat uit")
+        insert_in_to_antwoorden("hier is de lijst van de keywoorden:")
+        insert_in_to_antwoorden(" documentatie vind je op volgende link: ")
 
-insert_in_to_sleutels(1, "hallo")
-insert_in_to_sleutels(2, "help")
-insert_in_to_sleutels(3, "status")
-insert_in_to_sleutels(6, "lijst")
-insert_in_to_sleutels(4, "aan")
-insert_in_to_sleutels(5, "uit")
-insert_in_to_sleutels(7, "documentatie")
-insert_in_to_sleutels(8, "confugureer")
+        insert_in_to_sleutels(1, "hallo")
+        insert_in_to_sleutels(2, "help")
+        insert_in_to_sleutels(3, "status")
+        insert_in_to_sleutels(6, "lijst")
+        insert_in_to_sleutels(4, "aan")
+        insert_in_to_sleutels(5, "uit")
+        insert_in_to_sleutels(7, "documentatie")
+        insert_in_to_sleutels(8, "confugureer")
 
-insert_in_to_links(7, "python", "http://tdc-www.harvard.edu/Python.pdf")
-insert_in_to_links(7, "ecs", "https://docs.aws.amazon.com/ecs/index.html#lang/en_us")
-insert_in_to_links(7, "ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us")
-insert_in_to_links(7, "ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us")
-insert_in_to_links(7, "s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us")
-insert_in_to_links(7, "codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us")
-insert_in_to_links(7, "codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
-insert_in_to_links(7, "docker", "https://docs.docker.com/")
-insert_in_to_links(7, "terraform", "https://www.terraform.io/intro/index.html")
+        insert_in_to_links(7, "python", "http://tdc-www.harvard.edu/Python.pdf")
+        insert_in_to_links(7, "ecs", "https://docs.aws.amazon.com/ecs/index.html#lang/en_us")
+        insert_in_to_links(7, "ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us")
+        insert_in_to_links(7, "ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us")
+        insert_in_to_links(7, "s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us")
+        insert_in_to_links(7, "codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us")
+        insert_in_to_links(7, "codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
+        insert_in_to_links(7, "docker", "https://docs.docker.com/")
+        insert_in_to_links(7, "cloudformation", "https://docs.aws.amazon.com/cloudformation/index.html")
+        insert_in_to_links(7, "terraform", "https://www.terraform.io/intro/index.html")
+        insert_in_to_links(7, "kubernetes", "https://kubernetes.io/docs/home/")
+        insert_in_to_links(7, "jenkins", "https://jenkins.io/doc/")
+        ant = True
+    else:
+        ant = False
+    return ant
+
+
+vullen()
