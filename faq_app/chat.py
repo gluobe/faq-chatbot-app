@@ -1,6 +1,7 @@
 from slackeventsapi import SlackEventAdapter
 import slack
 import help
+import os
 from flask import Flask
 
 app = Flask(__name__)
@@ -10,7 +11,7 @@ app = Flask(__name__)
 def hello():
     return "The connection is healthy!!!!!"
 
-app.
+
 slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events", app)
 
 # Deze functie reageerd als in de chat gepost is, men gaan de texr ophallen en antwoorden indien nodig
