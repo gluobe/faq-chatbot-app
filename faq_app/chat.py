@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route("/health")
 def hello():
-    return "The connection is healthy!!!!!"
+    return "The connection is healthy!!!!!" + os.getenv('SLACK_SECRET')
 
 
 slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events", app)
