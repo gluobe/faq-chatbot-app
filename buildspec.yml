@@ -1,5 +1,9 @@
 version: 0.2
 
+env:
+  variables:
+    SLACK_SECRET: ${SLACK_SECRET}
+    SLACK_ACCES_TOKEN: ${SLACK_ACCES_TOKEN}
 phases:
   pre_build:
     commands:
