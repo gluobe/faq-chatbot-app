@@ -1,6 +1,8 @@
 version: 0.2
 
 env:
+  commands:
+    - echo ${SLACK_SECRET}...
   variables:
     SLACK_SECRET: ${SLACK_SECRET}
     SLACK_ACCES_TOKEN: ${SLACK_ACCES_TOKEN}
