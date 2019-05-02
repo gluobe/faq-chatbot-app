@@ -1,6 +1,20 @@
 # import van modulen
 import sqlite3
+import mysql.connector
+import os
 
+mydb = mysql.connector.connect(
+  host="faqchatbot.cluster-cq7bczewmzvu.eu-west-2.rds.amazonaws.com",
+  user="abdul",
+  passwd=os.getenv('DB_PASSWORD')
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE DATABASE mydatabase")
+
+print(mydb.is_connected().__str__())
+'''
 # Aanmaak database zet de thread uit. De databank woord in een andere threat gemaakt dan in de threat dat de code
 # uitgevoert zal worden
 conn = sqlite3.connect('faq_chat.db', check_same_thread=False)
@@ -147,3 +161,4 @@ def vullen():
 
 
 vullen()
+'''
