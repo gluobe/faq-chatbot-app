@@ -18,9 +18,11 @@ slack_events_adapter = SlackEventAdapter(slack.get_secret(), "/slack/events", ap
 @slack_events_adapter.on("message")
 def handle_message(event_data):
     message = event_data["event"]
+    channel = message["channel"]
     isGevonden = help.check_for_word(message.get('text'))
     if message.get("subtype") is None and isGevonden:
-        slack.zend_bericht(help.get_bericht())
+        slack.zend_bericht('#general', help.get_bericht())
+        slack.zend_bericht(channel, channel)
     elif message.get("subtype") is None and ("chuck" in message.get('text') and "norris" in message.get('text')):
         slack.zend_bericht(slack.get_cn_joke())
 

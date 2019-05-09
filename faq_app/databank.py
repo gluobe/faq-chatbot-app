@@ -9,13 +9,13 @@ mydb = mysql.connector.connect(
   host=os.getenv('DB_HOST'),
   user=os.getenv('DB_USER'),
   passwd=os.getenv('DB_PASSWORD'),
-  database="faqchat"
+  database=os.getenv('DB_NAME')
 )
 
 confluence = Confluence(
-    url='https://confluence-test.xploregroup.net',
-    username='simbaa1',
-    password=os.getenv('DB_PASSWORD'))
+    url=os.getenv('CONFLUENCE_URL'),
+    username=os.getenv('CONFLUENCE_USER'),
+    password=os.getenv('CONFLUENCE_PW'))
 
 
 try:
@@ -55,11 +55,12 @@ def create_tables():
 
         cursor.execute("CREATE TABLE IF NOT EXISTS pages (page_ID INT PRIMARY KEY,"
                        " link_id INT NOT NULL, FOREIGN KEY fk_link_ID_page(link_id) REFERENCES links(links_ID), "
-                       "space_id INT NOT NULL, FOREIGN KEY fk_space_ID_page(space_id) REFERENCES spaces(space_ID))")
+                       "space_id INT NOT NULL, FOREIGN KEY fk_space_ID_page(space_id) REFERENCES spaces(space_ID),"
+                       "type VARCHAR(255))")
 
-        cursor.execute("SHOW DATABASES")
+        cursor.execute("SHOW TABLES")
         for x in cursor:
-            print("Table:" + x + "was created")
+            print("Table: " + str(x[0]) + " was created")
     except mysql.connector.Error as error:
         mydb.rollback()
         print("Failed create tables {}".format(error))
@@ -150,7 +151,7 @@ def insert_in_to_spaces(spaceID, titel,type):
         global cursor
         cursor = mydb.cursor()
         sql_insert_query = """ INSERT INTO spaces (space_ID, link_id, type) 
-                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s ),%s) """
+                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s) """
         insert_tuple = (spaceID, titel, type)
         cursor.execute(sql_insert_query, insert_tuple)
         mydb.commit()
@@ -164,13 +165,13 @@ def insert_in_to_spaces(spaceID, titel,type):
         print("MySQL connection is closed")
 
 
-def insert_in_to_sleutels(pagesID, spaceID, titel):
+def insert_in_to_pages(pagesID, spaceID, titel,type):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = """ INSERT INTO pages (page_ID, link_id) 
-                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s,%s)) """
-        insert_tuple = (pagesID, spaceID, titel)
+        sql_insert_query = """ INSERT INTO pages (page_ID, link_id,space_id,type) 
+                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s,%s) """
+        insert_tuple = (pagesID, titel, spaceID, type)
         cursor.execute(sql_insert_query, insert_tuple)
         mydb.commit()
         print("Record inserted successfully into table pages")
@@ -305,7 +306,7 @@ def get_link(titel, sleutel):
         print("Failed to insert into MySQL table sleutels {}".format(error))
     finally:
         # closing database connection.
-        cursor.close()
+        #cursor.close()
         print("MySQL connection is closed")
 
 
@@ -314,10 +315,10 @@ def get_spaces():
         global cursor
         cursor = mydb.cursor()
 
-        cursor.execute("SELECT s.space_ID, l.titel,l.link,s.type FROM spaces"
-                       " s INNER JOIN links l ON s.link_id = l.links_ID")
+        cursor.execute("SELECT space_ID, titel, link, type FROM spaces"
+                       " INNER JOIN links ON spaces.link_id = links.links_ID")
         result = cursor.fetchall()
-        return db_to_array(result)
+        return result
     except mysql.connector.Error as error:
         mydb.rollback()
         print("Failed to insert into MySQL table sleutels {}".format(error))
@@ -333,12 +334,12 @@ def get_pages():
         cursor = mydb.cursor()
 
         cursor.execute("SELECT p.page_ID, l.titel,l.link,p.type, p.space_id FROM pages"
-                       " s INNER JOIN links l ON p.link_id = l.links_ID")
+                       " p INNER JOIN links l ON p.link_id = l.links_ID")
         result = cursor.fetchall()
-        return db_to_array(result)
+        return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -420,5 +421,28 @@ def get_confluence_pages():
             p.set_space_id(i.id)
             links.append(p)
     return links
+
+
+def spaces_vullen():
+    for space in get_confluence_spaces():
+        insert_in_to_links(7, space.titel, space.url)
+        insert_in_to_spaces(space.id, space.titel, space.type)
+
+
+def pages_vullen():
+    for page in get_confluence_pages():
+        insert_in_to_links(7, page.titel, page.url)
+        insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
+
+
+
+print(get_confluence_pages()[0].id)
+for pp in get_pages():
+    print(pp)
+#print(get_confluence_spaces()[0])
+#print(get_pages())
+#print(get_link("Gluo home", "documentatie"))
+
+print(get_titel_en_links())
 
 
