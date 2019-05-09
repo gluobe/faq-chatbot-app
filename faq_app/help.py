@@ -50,6 +50,5 @@ def get_link():
                 link = "*" + i + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link(j, gevonden_woord)
                 return link
             else:
-                link = "Ik weet niet welke documentatie u zoekt, ik heb volgende documentatie links: \n" \
-                       + databank.get_titel_en_links()
+                link = "Ik weet niet welke documentatie u zoekt, ik heb volgende documentatie links: "
     return link

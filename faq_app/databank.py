@@ -47,7 +47,7 @@ def create_tables():
 
         cursor.execute("CREATE TABLE IF NOT EXISTS links (links_ID INT AUTO_INCREMENT PRIMARY KEY, sleutelw_ID INT"
                        " NOT NULL,FOREIGN KEY fk_sleutelw_ID(sleutelw_ID) REFERENCES sleutelwoorden(sleutelw_ID),"
-                       " titel VARCHAR(255), link VARCHAR(255))")
+                       " titel VARCHAR(255) NOT NULL UNIQUE, link VARCHAR(255))")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS spaces (space_ID INT PRIMARY KEY,"
                        " link_id INT NOT NULL, FOREIGN KEY fk_link_ID_space(link_id) REFERENCES links(links_ID),"
@@ -237,20 +237,12 @@ def get_links():
 
 
 def get_titel_en_links():
-    try:
-        teller = 0
-        titelsenlinks = ""
-        while teller <= get_titels().__len__() - 1:
-            titelsenlinks += (get_titels()[teller] + " - " + get_links()[teller] + "\n")
-            teller += 1
-        return titelsenlinks
-    except mysql.connector.Error as error:
-        mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
-    finally:
-        # closing database connection.
-        cursor.close()
-        print("MySQL connection is closed")
+    teller = 0
+    titelsenlinks = ""
+    while teller <= get_titels().__len__() - 1:
+        titelsenlinks += (get_titels()[teller] + " - " + get_links()[teller] + "\n")
+        teller += 1
+    return titelsenlinks
 
 
 def get_antwoorden():
@@ -294,9 +286,9 @@ def get_link(titel, sleutel):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql = "SELECT link FROM links WHERE titel = LOWER(%s) and sleutelw_ID = " \
+        sql = "SELECT link FROM links WHERE LOWER(titel) = LOWER(%s) and sleutelw_ID = " \
               "(select sleutelw_ID from sleutelwoorden where sleutel = LOWER(%s))"
-        sleutel = (titel, sleutel,)
+        sleutel = (titel, sleutel)
 
         cursor.execute(sql, sleutel)
         result = cursor.fetchone()[0]
@@ -306,7 +298,7 @@ def get_link(titel, sleutel):
         print("Failed to insert into MySQL table sleutels {}".format(error))
     finally:
         # closing database connection.
-        #cursor.close()
+        cursor.close()
         print("MySQL connection is closed")
 
 
@@ -435,14 +427,9 @@ def pages_vullen():
         insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
 
 
-
-print(get_confluence_pages()[0].id)
-for pp in get_pages():
-    print(pp)
 #print(get_confluence_spaces()[0])
 #print(get_pages())
-#print(get_link("Gluo home", "documentatie"))
-
-print(get_titel_en_links())
-
+#print(get_titel_en_links())
+#print(get_link("ElasticSearch", "documentatie"))
+#print(get_links())
 

@@ -15,3 +15,4 @@ slacker
 slackeventsapi
 urllib3==1.24.2
 mysql-connector
+atlassian-python-api
