@@ -2,7 +2,7 @@
 import mysql.connector
 import os
 from atlassian import Confluence
-from faq_app import page
+import page
 
 
 mydb = mysql.connector.connect(
@@ -109,12 +109,13 @@ def insert_in_to_antwoorden(antwoord):
         print("MySQL connection is closed")
 
 
-def insert_in_to_links(sleutelid, titel, link):
+def insert_in_to_links(titel, link):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = "INSERT INTO `links` (`links_ID`,`sleutelw_ID`, `titel`, `link`) VALUES (%s, %s, %s,%s)"
-        insert_tuple = (0, sleutelid, titel, link)
+        sql_insert_query = "INSERT INTO links (links_ID,sleutelw_ID, titel, link) " \
+                           "VALUES (%s, (SELECT sleutelw_ID FROM sleutelwoorden WHERE sleutel='documentatie'), %s,%s)"
+        insert_tuple = (0, titel, link)
         cursor.execute(sql_insert_query, insert_tuple)
         mydb.commit()
         print("Record inserted successfully into table links")
@@ -292,6 +293,10 @@ def get_link(titel, sleutel):
 
         cursor.execute(sql, sleutel)
         result = cursor.fetchone()[0]
+        if cursor.fetchone().__len__() <= 0:
+            for link in get_confluence_pages():
+                if titel == link:
+                    pass
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
@@ -370,18 +375,18 @@ def vullen():
     insert_in_to_sleutels(7, "documentatie")
     insert_in_to_sleutels(8, "confugureer")
 
-    insert_in_to_links(7, "python", "http://tdc-www.harvard.edu/Python.pdf")
-    insert_in_to_links(7, "ecs", "https://docs.aws.amazon.com/ecs/index.html#lang/en_us")
-    insert_in_to_links(7, "ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us")
-    insert_in_to_links(7, "ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us")
-    insert_in_to_links(7, "s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us")
-    insert_in_to_links(7, "codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us")
-    insert_in_to_links(7, "codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
-    insert_in_to_links(7, "docker", "https://docs.docker.com/")
-    insert_in_to_links(7, "cloudformation", "https://docs.aws.amazon.com/cloudformation/index.html")
-    insert_in_to_links(7, "terraform", "https://www.terraform.io/intro/index.html")
-    insert_in_to_links(7, "kubernetes", "https://kubernetes.io/docs/home/")
-    insert_in_to_links(7, "jenkins", "https://jenkins.io/doc/")
+    insert_in_to_links("python", "http://tdc-www.harvard.edu/Python.pdf")
+    insert_in_to_links("ecs", "https://docs.aws.amazon.com/ecs/index.html#lang/en_us")
+    insert_in_to_links("ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us")
+    insert_in_to_links("ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us")
+    insert_in_to_links("s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us")
+    insert_in_to_links("codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us")
+    insert_in_to_links("codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
+    insert_in_to_links("docker", "https://docs.docker.com/")
+    insert_in_to_links("cloudformation", "https://docs.aws.amazon.com/cloudformation/index.html")
+    insert_in_to_links("terraform", "https://www.terraform.io/intro/index.html")
+    insert_in_to_links("kubernetes", "https://kubernetes.io/docs/home/")
+    insert_in_to_links("jenkins", "https://jenkins.io/doc/")
 
 # confluence
 
@@ -417,19 +422,27 @@ def get_confluence_pages():
 
 def spaces_vullen():
     for space in get_confluence_spaces():
-        insert_in_to_links(7, space.titel, space.url)
+        insert_in_to_links(space.titel, os.getenv('CONFLUENCE_URL')+space.url)
         insert_in_to_spaces(space.id, space.titel, space.type)
 
 
 def pages_vullen():
     for page in get_confluence_pages():
-        insert_in_to_links(7, page.titel, page.url)
+        insert_in_to_links(page.titel, os.getenv('CONFLUENCE_URL')+page.url)
         insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
 
 
+confluence2 = Confluence(
+    url='https://confluence-test.xploregroup.net',
+    username='simbaa1',
+    password=os.getenv('DB_PASSWORD'))
+
+print(confluence2.get_all_spaces(start=0, limit=500))
 #print(get_confluence_spaces()[0])
 #print(get_pages())
 #print(get_titel_en_links())
 #print(get_link("ElasticSearch", "documentatie"))
 #print(get_links())
 
+for link in get_confluence_pages():
+    print(link)
