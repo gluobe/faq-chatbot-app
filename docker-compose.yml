@@ -1,6 +1,6 @@
 version: '3'
 services:
-  faq1:
+  faq:
     build: .
     ports:
     - "80:3000"
@@ -14,5 +14,3 @@ services:
       - CONFLUENCE_USER=${CONFLUENCE_USER}
       - CONFLUENCE_PW=${CONFLUENCE_PW}
       - DB_NAME=${DB_NAME}
-  redis:
-    image: faq

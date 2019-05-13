@@ -41,6 +41,6 @@ try:
 
     # starten van de Flask server op port 3000 met de default /events
     if __name__ == "__main__":
-        app.run(port=80, host="0.0.0.0")
+        app.run(port=3000, host="0.0.0.0")
 except app.error_handler_spec as error:
     print("x")

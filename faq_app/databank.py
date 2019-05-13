@@ -12,6 +12,11 @@ mydb = mysql.connector.connect(
   database=os.getenv('DB_NAME')
 )
 
+if mysql.connector.connect():
+    print("DB connect ok")
+else:
+    print("DB Connection faild")
+
 confluence = Confluence(
     url=os.getenv('CONFLUENCE_URL'),
     username=os.getenv('CONFLUENCE_USER'),
@@ -293,10 +298,6 @@ def get_link(titel, sleutel):
 
         cursor.execute(sql, sleutel)
         result = cursor.fetchone()[0]
-        if cursor.fetchone().__len__() <= 0:
-            for link in get_confluence_pages():
-                if titel == link:
-                    pass
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
@@ -432,17 +433,12 @@ def pages_vullen():
         insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
 
 
-confluence2 = Confluence(
-    url='https://confluence-test.xploregroup.net',
-    username='simbaa1',
-    password=os.getenv('DB_PASSWORD'))
 
-print(confluence2.get_all_spaces(start=0, limit=500))
+
 #print(get_confluence_spaces()[0])
 #print(get_pages())
 #print(get_titel_en_links())
 #print(get_link("ElasticSearch", "documentatie"))
 #print(get_links())
 
-for link in get_confluence_pages():
-    print(link)
+
