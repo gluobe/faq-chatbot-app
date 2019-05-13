@@ -1,6 +1,7 @@
 # import van modulen
 import mysql.connector
 import os
+import requests
 from atlassian import Confluence
 import page
 
@@ -13,7 +14,7 @@ mydb = mysql.connector.connect(
 )
 
 if mysql.connector.connect():
-    print("DB connect ok")
+    print("DB connection ok")
 else:
     print("DB Connection faild")
 
@@ -28,11 +29,10 @@ try:
     cursor.execute("CREATE DATABASE IF NOT EXISTS faqchat")
 except mysql.connector.Error as errors:
     mydb.rollback()
-    print("Failed to insert into MySQL table sleutels {}".format(errors))
+    print("Failed to create database faqchat {}".format(errors))
 finally:
     # closing database connection.
     cursor.close()
-    print("MySQL connection is closed")
 
 # print(mydb.is_connected().__str__())
 # Aanmaak tabellen, na het aanmaken moeten deze lijnen weg
@@ -87,7 +87,7 @@ def update_link(link, titel):
         print("The link of " + titel + "is updated")
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to opdate MySQL table links {}".format(error))
+        print("Failed to update MySQL table links {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -201,7 +201,7 @@ def get_sleutels():
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get sleutel from MSQL table sleutels {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -219,7 +219,7 @@ def get_titels():
 
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get titel from MYSQL table links {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -235,7 +235,7 @@ def get_links():
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get links from MYSQL table links {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -260,7 +260,7 @@ def get_antwoorden():
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get antwoorden from MySQL table antwoorden {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -281,7 +281,7 @@ def get_antwoord(vraag):
 
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get antwoord from MySQL table antwoorden {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -295,13 +295,27 @@ def get_link(titel, sleutel):
         sql = "SELECT link FROM links WHERE LOWER(titel) = LOWER(%s) and sleutelw_ID = " \
               "(select sleutelw_ID from sleutelwoorden where sleutel = LOWER(%s))"
         sleutel = (titel, sleutel)
-
         cursor.execute(sql, sleutel)
-        result = cursor.fetchone()[0]
+        url = cursor.fetchone()
+        if url is not None:
+            result = url[0]
+            print("gevonden in de database")
+        elif url is None:
+            for i in get_confluence_pages():
+                if i.titel == titel:
+                    insert_in_to_links(i.titel, os.getenv('CONFLUENCE_URL') + i.url)
+                    insert_in_to_pages(i.id, i.spaceid, i.titel, i.type)
+                    result = os.getenv('CONFLUENCE_URL') + i.url
+                    print("gevonden in confluence")
+                    break
+                else:
+                    print("page not found 404")
+                    result = ""
+
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get link from MSQL table links {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -319,7 +333,7 @@ def get_spaces():
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutels {}".format(error))
+        print("Failed to get space from MYSQL table spaces {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -337,7 +351,7 @@ def get_pages():
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get table pages {}".format(error))
+        print("Failed to get page from MYSQL table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -405,8 +419,8 @@ def get_confluence_spaces():
     p = confluence.get_all_spaces(start=0, limit=500)
     links = []
     for j in p:
-        p = page.Page(j['id'], j['key'], j['_links']['webui'], j['type'])
-        links.append(p)
+        pa = page.Page(j['id'], j['key'], j['_links']['webui'], j['type'])
+        links.append(pa)
     return links
 
 
@@ -415,9 +429,9 @@ def get_confluence_pages():
     for i in get_confluence_spaces():
         p = confluence.get_all_pages_from_space(space=i.titel, start=0, limit=500)
         for j in p:
-            p = page.Page(j['id'], j['title'], j['_links']['webui'], j['type'])
-            p.set_space_id(i.id)
-            links.append(p)
+            pa = page.Page(j['id'], j['title'], j['_links']['webui'], j['type'])
+            pa.set_space_id(i.id)
+            links.append(pa)
     return links
 
 
@@ -433,12 +447,48 @@ def pages_vullen():
         insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
 
 
+def check_if_populated():
+    create_tables()
+    try:
+        global cursor
+        tables = []
+        cursortables = mydb.cursor()
+        cursorcount = mydb.cursor()
+
+        cursortables.execute("SHOW TABLES")
+        for table in cursortables:
+            tables.append(table[0])
+        for item in tables:
+            sql = "SELECT * FROM " + item
+            cursorcount.execute(sql)
+            cursorcount.fetchall()
+            result = cursorcount.rowcount
+            print(str(result) + " "+str(item))
+            if result is None:
+                if item == "pages":
+                    pages_vullen()
+                elif item == "spaces":
+                    spaces_vullen()
+                else:
+                    vullen()
+    except mysql.connector.Error as error:
+        mydb.rollback()
+        print("Failed to check if MSQL database is populated {}".format(error))
+    finally:
+        # closing database connection.
+        cursor.close()
+        print("MySQL connection is closed")
 
 
-#print(get_confluence_spaces()[0])
-#print(get_pages())
-#print(get_titel_en_links())
-#print(get_link("ElasticSearch", "documentatie"))
-#print(get_links())
+# check_if_populated()
+def url_check():
+    try:
+        for link in get_spaces():
+            responce = requests.get('http://mple.com')
+            print(responce.status_code)
+            print(link)
+    except requests.exceptions.ConnectionError as e:
+        print(e.strerror)
 
 
+url_check()
