@@ -1,7 +1,7 @@
 import databank
 
 gevonden_woord = ""
-gevraagd = ""
+gevraagd = []
 
 
 # deze fuctie gaat zoeken in de zin of er een sleutelwoord is
@@ -42,6 +42,7 @@ def sleutels_str():
 
 
 # zoekt een "titel" in de opgegeven zin en geeft het door naar de databank, de databank geeft een link terug
+'''
 def get_link():
     global link
     for i in databank.get_titels():
@@ -52,3 +53,29 @@ def get_link():
             else:
                 link = "Ik weet niet welke documentatie u zoekt, ik heb volgende documentatie links: "
     return link
+
+'''
+
+
+def get_link():
+    global link
+    global teller
+    global arr
+    link = ""
+    arr = {}
+    for t in databank.get_titels():
+        titelarr = str(t).split()
+        teller = 0
+        for s in titelarr:
+            if s in gevraagd:
+                teller += 1
+        if teller == titelarr.__len__() or teller >= (titelarr.__len__()/2):
+            link = "*" + t + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link(t, gevonden_woord)
+            arr.update({teller: link})
+            # print(arr)
+    link = arr.get(max(arr.keys()))
+    return link
+
+
+print(check_for_word("documentatie Azure en Ansible"))
+print(get_bericht())

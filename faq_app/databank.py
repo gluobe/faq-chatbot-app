@@ -322,6 +322,43 @@ def get_link(titel, sleutel):
         print("MySQL connection is closed")
 
 
+def get_link2(titel, sleutel, space):
+    try:
+        global cursor
+        cursor = mydb.cursor()
+        sql = "SELECT link FROM links " \
+              "inner join sleutelwoorden on links.sleutelw_ID = sleutelwoorden.sleutelw_ID " \
+              "inner join spaces on links.links_ID = spaces.link_id " \
+              "inner join pages on pages.space_id = spaces.space_ID " \
+              "WHERE LOWER(links.titel) = LOWER(%s) and sleutelwoorden.sleutel = LOWER(%s) and pages.space_id = %s "
+        sleutel = (titel, sleutel, space)
+        cursor.execute(sql, sleutel)
+        url = cursor.fetchone()
+        if url is not None:
+            result = url[0]
+            print("gevonden in de database")
+        elif url is None:
+            for i in get_confluence_pages():
+                if i.titel == titel:
+                    insert_in_to_links(i.titel, os.getenv('CONFLUENCE_URL') + i.url)
+                    insert_in_to_pages(i.id, i.spaceid, i.titel, i.type)
+                    result = os.getenv('CONFLUENCE_URL') + i.url
+                    print("gevonden in confluence")
+                    break
+                else:
+                    print("page not found 404")
+                    result = ""
+
+        return result
+    except mysql.connector.Error as error:
+        mydb.rollback()
+        print("Failed to get link from MSQL table links {}".format(error))
+    finally:
+        # closing database connection.
+        cursor.close()
+        print("MySQL connection is closed")
+
+
 def get_spaces():
     try:
         global cursor
@@ -454,7 +491,6 @@ def check_if_populated():
         tables = []
         cursortables = mydb.cursor()
         cursorcount = mydb.cursor()
-
         cursortables.execute("SHOW TABLES")
         for table in cursortables:
             tables.append(table[0])
@@ -491,4 +527,15 @@ def url_check():
         print(e.strerror)
 
 
-url_check()
+# url_check()
+
+cursortest = mydb.cursor()
+sql1 = "SELECT link FROM links " \
+      "inner join sleutelwoorden on links.sleutelw_ID = sleutelwoorden.sleutelw_ID " \
+      "inner join spaces on links.links_ID = spaces.link_id " \
+      "inner join pages on pages.space_id = spaces.space_ID " \
+      "WHERE LOWER(links.titel) = LOWER(%s) and sleutelwoorden.sleutel = LOWER(%s) and pages.space_id = %s "
+sleutel1 = ("Gluo", "documentatie", "71270433")
+cursortest.execute(sql1, sleutel1)
+url1 = cursortest.fetchone()
+print(url1)
