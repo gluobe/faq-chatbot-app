@@ -2,6 +2,7 @@ import databank
 
 gevonden_woord = ""
 gevraagd = []
+idchannel = ""
 
 
 # deze fuctie gaat zoeken in de zin of er een sleutelwoord is
@@ -10,6 +11,21 @@ def check_for_word(sentence):
     global gevonden_woord
 
     gevraagd = str(sentence).split()
+
+    for word in databank.get_sleutels():
+        for i in gevraagd:
+            if word == i.lower():
+                gevonden_woord = word
+                return True
+
+
+def check_for_word2(sentence, channelid):
+    global gevraagd
+    global gevonden_woord
+    global idchanel
+
+    gevraagd = str(sentence).split()
+    idchanel = channelid
 
     for word in databank.get_sleutels():
         for i in gevraagd:
@@ -70,12 +86,15 @@ def get_link():
             if s in gevraagd:
                 teller += 1
         if teller == titelarr.__len__() or teller >= (titelarr.__len__()/2):
-            link = "*" + t + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link(t, gevonden_woord)
+            link = "*" + t + "*" + databank.get_antwoord(gevonden_woord) + "\n" + databank.get_link2(t, gevonden_woord, get_space_id(idchannel))
             arr.update({teller: link})
             # print(arr)
     link = arr.get(max(arr.keys()))
     return link
 
 
-print(check_for_word("documentatie Azure en Ansible"))
-print(get_bericht())
+def get_space_id(channelid):
+    if channelid == "CJR8SR1JR":
+        return databank.get_space_id("FAQD")
+    elif channelid == "CJJ9PRH39":
+        return databank.get_space_id("FAQO")

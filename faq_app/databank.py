@@ -45,23 +45,17 @@ def create_tables():
         cursor.execute("CREATE TABLE IF NOT EXISTS antwoorden (antwoord_ID INT AUTO_INCREMENT  PRIMARY KEY, "
                        "antwoord VARCHAR(255))")
 
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS sleutelwoorden (sleutelw_ID INT AUTO_INCREMENT PRIMARY KEY, antwoord_ID"
-            " INT NOT NULL,FOREIGN KEY fk_antwoord_ID(antwoord_ID) REFERENCES antwoorden(antwoord_ID),"
-            " sleutel VARCHAR(255) NOT NULL UNIQUE)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS links (links_ID INT AUTO_INCREMENT PRIMARY KEY, link VARCHAR(255))")
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS links (links_ID INT AUTO_INCREMENT PRIMARY KEY, sleutelw_ID INT"
-                       " NOT NULL,FOREIGN KEY fk_sleutelw_ID(sleutelw_ID) REFERENCES sleutelwoorden(sleutelw_ID),"
-                       " titel VARCHAR(255) NOT NULL UNIQUE, link VARCHAR(255))")
-
-        cursor.execute("CREATE TABLE IF NOT EXISTS spaces (space_ID INT PRIMARY KEY,"
-                       " link_id INT NOT NULL, FOREIGN KEY fk_link_ID_space(link_id) REFERENCES links(links_ID),"
-                       " type VARCHAR(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS sleutelwoorden (sleutelw_ID INT AUTO_INCREMENT PRIMARY KEY, "
+                       "antwoord_ID INT NOT NULL,FOREIGN KEY fk_antwoord_ID(antwoord_ID) REFERENCES "
+                       "antwoorden(antwoord_ID), link_ID INT, FOREIGN KEY fk_link_ID_sleutel(link_ID) "
+                       "REFERENCES link(link_ID), sleutel VARCHAR(255) NOT NULL UNIQUE)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS pages (page_ID INT PRIMARY KEY,"
-                       " link_id INT NOT NULL, FOREIGN KEY fk_link_ID_page(link_id) REFERENCES links(links_ID), "
-                       "space_id INT NOT NULL, FOREIGN KEY fk_space_ID_page(space_id) REFERENCES spaces(space_ID),"
-                       "type VARCHAR(255))")
+                       " space_ID INT, FOREIGN KEY fk_page_ID_page(space_ID) REFERENCES pages(page_ID),"
+                       " link_ID INT, FOREIGN KEY fk_link_ID_page(link_ID) REFERENCES link(link_ID),"
+                       " titel VARCHAR(255)), url VARCHAR(255), type VARCHAR(255)))")
 
         cursor.execute("SHOW TABLES")
         for x in cursor:
@@ -176,7 +170,7 @@ def insert_in_to_pages(pagesID, spaceID, titel,type):
         global cursor
         cursor = mydb.cursor()
         sql_insert_query = """ INSERT INTO pages (page_ID, link_id,space_id,type) 
-                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s,%s) """
+                                        VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s,%s) """
         insert_tuple = (pagesID, titel, spaceID, type)
         cursor.execute(sql_insert_query, insert_tuple)
         mydb.commit()
@@ -213,7 +207,7 @@ def get_titels():
         global cursor
         cursor = mydb.cursor()
 
-        cursor.execute("SELECT titel FROM links")
+        cursor.execute("SELECT titel FROM pages")
         result = cursor.fetchall()
         return db_to_array(result)
 
@@ -230,7 +224,7 @@ def get_links():
     try:
         global cursor
         cursor = mydb.cursor()
-        cursor.execute("SELECT link FROM links")
+        cursor.execute("SELECT url FROM pages")
         result = cursor.fetchall()
         return db_to_array(result)
     except mysql.connector.Error as error:
@@ -359,18 +353,20 @@ def get_link2(titel, sleutel, space):
         print("MySQL connection is closed")
 
 
-def get_spaces():
+def get_space_id(spacename):
     try:
         global cursor
         cursor = mydb.cursor()
 
-        cursor.execute("SELECT space_ID, titel, link, type FROM spaces"
-                       " INNER JOIN links ON spaces.link_id = links.links_ID")
-        result = cursor.fetchall()
+        spl = "SELECT space_ID FROM spaces INNER JOIN links ON spaces.link_id = links.links_ID " \
+              "WHERE LOWER(links.titel) = LOWER(%s)"
+        val = (spacename, )
+        cursor.execute(spl, val)
+        result = cursor.fetchone()[0]
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get space from MYSQL table spaces {}".format(error))
+        print("Failed to get space_ID from MYSQL table spaces {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -480,7 +476,7 @@ def spaces_vullen():
 
 def pages_vullen():
     for page in get_confluence_pages():
-        insert_in_to_links(page.titel, os.getenv('CONFLUENCE_URL')+page.url)
+        #insert_in_to_links(page.titel, os.getenv('CONFLUENCE_URL')+page.url)
         insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
 
 
@@ -519,23 +515,9 @@ def check_if_populated():
 # check_if_populated()
 def url_check():
     try:
-        for link in get_spaces():
-            responce = requests.get('http://mple.com')
-            print(responce.status_code)
-            print(link)
+        pass
     except requests.exceptions.ConnectionError as e:
         print(e.strerror)
 
 
 # url_check()
-
-cursortest = mydb.cursor()
-sql1 = "SELECT link FROM links " \
-      "inner join sleutelwoorden on links.sleutelw_ID = sleutelwoorden.sleutelw_ID " \
-      "inner join spaces on links.links_ID = spaces.link_id " \
-      "inner join pages on pages.space_id = spaces.space_ID " \
-      "WHERE LOWER(links.titel) = LOWER(%s) and sleutelwoorden.sleutel = LOWER(%s) and pages.space_id = %s "
-sleutel1 = ("Gluo", "documentatie", "71270433")
-cursortest.execute(sql1, sleutel1)
-url1 = cursortest.fetchone()
-print(url1)
