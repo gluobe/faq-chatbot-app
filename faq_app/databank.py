@@ -42,20 +42,21 @@ def create_tables():
     try:
         global cursor
         cursor = mydb.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS antwoorden (antwoord_ID INT AUTO_INCREMENT  PRIMARY KEY, "
-                       "antwoord VARCHAR(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS answers (answer_ID INT AUTO_INCREMENT  PRIMARY KEY, "
+                       "answer VARCHAR(255))")
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS links (links_ID INT AUTO_INCREMENT PRIMARY KEY, link VARCHAR(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS links (link_ID INT AUTO_INCREMENT PRIMARY KEY, "
+                       "link VARCHAR(255) NOT NULL UNIQUE)")
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS sleutelwoorden (sleutelw_ID INT AUTO_INCREMENT PRIMARY KEY, "
-                       "antwoord_ID INT NOT NULL,FOREIGN KEY fk_antwoord_ID(antwoord_ID) REFERENCES "
-                       "antwoorden(antwoord_ID), link_ID INT, FOREIGN KEY fk_link_ID_sleutel(link_ID) "
-                       "REFERENCES link(link_ID), sleutel VARCHAR(255) NOT NULL UNIQUE)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS keywords (keyword_ID INT AUTO_INCREMENT PRIMARY KEY, "
+                       "answer_ID INT NOT NULL,FOREIGN KEY fk_answer_ID(answer_ID) REFERENCES "
+                       "answers(answer_ID), link_ID INT, FOREIGN KEY fk_link_ID_keyword(link_ID) "
+                       "REFERENCES links(link_ID), keyword VARCHAR(255) NOT NULL UNIQUE)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS pages (page_ID INT PRIMARY KEY,"
                        " space_ID INT, FOREIGN KEY fk_page_ID_page(space_ID) REFERENCES pages(page_ID),"
-                       " link_ID INT, FOREIGN KEY fk_link_ID_page(link_ID) REFERENCES link(link_ID),"
-                       " titel VARCHAR(255)), url VARCHAR(255), type VARCHAR(255)))")
+                       " link_ID INT, FOREIGN KEY fk_link_ID_page(link_ID) REFERENCES links(link_ID),"
+                       " title VARCHAR(255), url VARCHAR(255), type VARCHAR(255))")
 
         cursor.execute("SHOW TABLES")
         for x in cursor:
@@ -69,16 +70,16 @@ def create_tables():
         print("MySQL connection is closed")
 
 
-def update_link(link, titel):
+def update_link(link, title):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql = "UPDATE links SET link = %s WHERE titel = %s"
-        val = (link, titel)
+        sql = "UPDATE links SET link = %s WHERE title = %s"
+        val = (link, title)
 
         cursor.execute(sql, val)
         mydb.commit()
-        print("The link of " + titel + "is updated")
+        print("The link of " + title + "is updated")
     except mysql.connector.Error as error:
         mydb.rollback()
         print("Failed to update MySQL table links {}".format(error))
@@ -89,33 +90,31 @@ def update_link(link, titel):
 
 
 # insert
-def insert_in_to_antwoorden(antwoord):
+def insert_in_to_answers(answer):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = """ INSERT INTO `antwoorden`
-                            (`antwoord_ID`,`antwoord`) VALUES (%s,%s)"""
-        insert_tuple = (0, antwoord)
+        sql_insert_query = " INSERT INTO answers (answer_ID, answer) VALUES (%s,%s)"
+        insert_tuple = (0, answer)
         cursor.execute(sql_insert_query, insert_tuple)
         mydb.commit()
-        print("Record inserted successfully into table antwoorden")
+        print("Record inserted successfully into table answers")
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table antwoorden {}".format(error))
+        print("Failed to insert into MySQL table answers {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def insert_in_to_links(titel, link):
+def insert_in_to_links(link):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = "INSERT INTO links (links_ID,sleutelw_ID, titel, link) " \
-                           "VALUES (%s, (SELECT sleutelw_ID FROM sleutelwoorden WHERE sleutel='documentatie'), %s,%s)"
-        insert_tuple = (0, titel, link)
-        cursor.execute(sql_insert_query, insert_tuple)
+        sql = "INSERT INTO links (link_ID, link) VALUES (%s, %s)"
+        val = (0, link)
+        cursor.execute(sql, val)
         mydb.commit()
         print("Record inserted successfully into table links")
     except mysql.connector.Error as error:
@@ -127,52 +126,67 @@ def insert_in_to_links(titel, link):
         print("MySQL connection is closed")
 
 
-def insert_in_to_sleutels(antID, sleutel):
+def insert_in_to_keywords(antID, keyword):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = """ INSERT INTO sleutelwoorden (sleutelw_ID, antwoord_ID, sleutel) 
-                                VALUES (%s,%s,%s) """
-        insert_tuple = (0, antID, sleutel)
-        cursor.execute(sql_insert_query, insert_tuple)
+        sql = "INSERT INTO keywords (keyword_ID, answer_ID, keyword) VALUES (%s,%s,%s)"
+        val = (0, antID, keyword)
+        cursor.execute(sql, val)
         mydb.commit()
-        print("Record inserted successfully into table sleutelwoorden")
+        print("Record inserted successfully into table keywords")
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table sleutelwoorden{}".format(error))
+        print("Failed to insert into MySQL table keywords{}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def insert_in_to_spaces(spaceID, titel,type):
+def insert_in_to_pages(pagesid, linkid, title, url, type):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = """ INSERT INTO spaces (space_ID, link_id, type) 
-                                VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s) """
-        insert_tuple = (spaceID, titel, type)
-        cursor.execute(sql_insert_query, insert_tuple)
+        sql = "INSERT INTO pages (page_ID, link_ID, title, url, type)VALUES (%s,%s,%s,%s,%s)"
+        val = (pagesid, linkid, title, url, type)
+        cursor.execute(sql, val)
         mydb.commit()
-        print("Record inserted successfully into table spaces")
+        print("Record inserted successfully into table pages")
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to insert into MySQL table spaces{}".format(error))
+        print("Failed to insert into MySQL table pages{}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def insert_in_to_pages(pagesID, spaceID, titel,type):
+def insert_in_to_keywords_li(antID, linkID, keyword):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql_insert_query = """ INSERT INTO pages (page_ID, link_id,space_id,type) 
-                                        VALUES (%s,(SELECT links_ID FROM links WHERE titel=%s),%s,%s) """
-        insert_tuple = (pagesID, titel, spaceID, type)
-        cursor.execute(sql_insert_query, insert_tuple)
+        sql = "INSERT INTO keywords (keyword_ID, answer_ID, link_ID, keyword) VALUES (%s,%s,%s,%s)"
+        val = (0, antID, linkID, keyword)
+        cursor.execute(sql, val)
+        mydb.commit()
+        print("Record inserted successfully into table keywords")
+    except mysql.connector.Error as error:
+        mydb.rollback()
+        print("Failed to insert into MySQL table keywords{}".format(error))
+    finally:
+        # closing database connection.
+        cursor.close()
+        print("MySQL connection is closed")
+
+
+def insert_in_to_pages_sp(pagesid, spaceid, linkid, title, url, type):
+    try:
+        global cursor
+        cursor = mydb.cursor()
+        sql = "INSERT INTO pages (page_ID, space_ID, link_ID, title, url, type)VALUES (%s,%s,%s,%s,%s,%s)"
+        val = (pagesid, spaceid, linkid, title, url, type)
+        cursor.execute(sql, val)
         mydb.commit()
         print("Record inserted successfully into table pages")
     except mysql.connector.Error as error:
@@ -185,35 +199,34 @@ def insert_in_to_pages(pagesID, spaceID, titel,type):
 
 
 # get
-def get_sleutels():
+def get_keywords():
     try:
         global cursor
         cursor = mydb.cursor()
-
-        cursor.execute("SELECT sleutel FROM sleutelwoorden")
+        cursor.execute("SELECT keyword FROM keywords")
         result = cursor.fetchall()
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get sleutel from MSQL table sleutels {}".format(error))
+        print("Failed to get keyword from MSQL table keywords {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def get_titels():
+def get_titles():
     try:
         global cursor
         cursor = mydb.cursor()
 
-        cursor.execute("SELECT titel FROM pages")
+        cursor.execute("SELECT title FROM pages")
         result = cursor.fetchall()
         return db_to_array(result)
 
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get titel from MYSQL table links {}".format(error))
+        print("Failed to get title from MYSQL table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -229,124 +242,130 @@ def get_links():
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get links from MYSQL table links {}".format(error))
+        print("Failed to get links from MYSQL table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def get_titel_en_links():
+def get_title_en_links():
     teller = 0
-    titelsenlinks = ""
-    while teller <= get_titels().__len__() - 1:
-        titelsenlinks += (get_titels()[teller] + " - " + get_links()[teller] + "\n")
+    titlesenlinks = ""
+    while teller <= get_titles().__len__() - 1:
+        titlesenlinks += (get_titles()[teller] + " - " + get_links()[teller] + "\n")
         teller += 1
-    return titelsenlinks
+    return titlesenlinks
 
 
-def get_antwoorden():
+def get_answers():
     try:
         global cursor
         cursor = mydb.cursor()
-        cursor.execute("SELECT antwoord FROM antwoorden")
+        cursor.execute("SELECT answer FROM answers")
         result = cursor.fetchall()
         return db_to_array(result)
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get antwoorden from MySQL table antwoorden {}".format(error))
+        print("Failed to get answer from MySQL table answers {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def get_antwoord(vraag):
+def get_answer(question):
     try:
         global cursor
         cursor = mydb.cursor()
-        sql = "SELECT antwoord from antwoorden WHERE antwoord_ID = " \
-              "(SELECT antwoord_ID from sleutelwoorden WHERE sleutel = LOWER(%s))"
-        sleutel = (vraag,)
-
-        cursor.execute(sql, sleutel)
+        sql = "SELECT answer from answers " \
+              "INNER JOIN keywords ON answers.answer_ID = keywords.answer_ID " \
+              "WHERE LOWER(keyword) = LOWER(%s)"
+        val = (question,)
+        cursor.execute(sql, val)
         result = cursor.fetchone()[0]
         return result
 
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get antwoord from MySQL table antwoorden {}".format(error))
+        print("Failed to get answer from MySQL table answers {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def get_link(titel, sleutel):
+def get_link(title, keyword):
     try:
         global cursor
+        global s
+        result = []
+        s = ""
         cursor = mydb.cursor()
-        sql = "SELECT link FROM links WHERE LOWER(titel) = LOWER(%s) and sleutelw_ID = " \
-              "(select sleutelw_ID from sleutelwoorden where sleutel = LOWER(%s))"
-        sleutel = (titel, sleutel)
-        cursor.execute(sql, sleutel)
-        url = cursor.fetchone()
+        sql = "SELECT url FROM pages " \
+              "INNER JOIN links ON pages.link_ID = links.link_ID " \
+              "INNER JOIN keywords ON links.link_ID = keywords.link_ID " \
+              "WHERE LOWER(title) = LOWER(%s) and LOWER(keyword) = LOWER(%s)"
+        val = (title, keyword)
+        cursor.execute(sql, val)
+        url = cursor.fetchall()
         if url is not None:
-            result = url[0]
+            for i in url:
+                result.append(i)
+                s = s + "\n" + str(i[0])
+
             print("gevonden in de database")
         elif url is None:
             for i in get_confluence_pages():
-                if i.titel == titel:
-                    insert_in_to_links(i.titel, os.getenv('CONFLUENCE_URL') + i.url)
-                    insert_in_to_pages(i.id, i.spaceid, i.titel, i.type)
-                    result = os.getenv('CONFLUENCE_URL') + i.url
+                if i.title == title:
+                    insert_in_to_pages_sp(i.id, i.spaceid, 1, i.title, os.getenv('CONFLUENCE_URL') + i.url, i.type)
+                    s = os.getenv('CONFLUENCE_URL') + i.url
                     print("gevonden in confluence")
                     break
                 else:
                     print("page not found 404")
-                    result = ""
+                    s = ""
 
-        return result
+        return s
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get link from MSQL table links {}".format(error))
+        print("Failed to get link from MSQL table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
         print("MySQL connection is closed")
 
 
-def get_link2(titel, sleutel, space):
+def get_link_sp(title, keyword, space):
     try:
         global cursor
+        result = ""
         cursor = mydb.cursor()
-        sql = "SELECT link FROM links " \
-              "inner join sleutelwoorden on links.sleutelw_ID = sleutelwoorden.sleutelw_ID " \
-              "inner join spaces on links.links_ID = spaces.link_id " \
-              "inner join pages on pages.space_id = spaces.space_ID " \
-              "WHERE LOWER(links.titel) = LOWER(%s) and sleutelwoorden.sleutel = LOWER(%s) and pages.space_id = %s "
-        sleutel = (titel, sleutel, space)
-        cursor.execute(sql, sleutel)
+        sql = "SELECT url FROM pages " \
+              "INNER JOIN links ON pages.link_ID = links.link_ID " \
+              "INNER JOIN keywords ON links.link_ID = keywords.link_ID " \
+              "WHERE LOWER(title) = LOWER(%s) AND LOWER(keyword) = LOWER(%s) " \
+              "AND pages.space_id = %s AND pages.link_ID = links.link_ID"
+        val = (title, keyword, space)
+        cursor.execute(sql, val)
         url = cursor.fetchone()
         if url is not None:
             result = url[0]
             print("gevonden in de database")
         elif url is None:
             for i in get_confluence_pages():
-                if i.titel == titel:
-                    insert_in_to_links(i.titel, os.getenv('CONFLUENCE_URL') + i.url)
-                    insert_in_to_pages(i.id, i.spaceid, i.titel, i.type)
+                if i.title == title:
+                    insert_in_to_pages_sp(i.id, i.spaceid, 1, i.title, os.getenv('CONFLUENCE_URL') + i.url, i.type)
                     result = os.getenv('CONFLUENCE_URL') + i.url
                     print("gevonden in confluence")
                     break
                 else:
                     print("page not found 404")
                     result = ""
-
         return result
     except mysql.connector.Error as error:
         mydb.rollback()
-        print("Failed to get link from MSQL table links {}".format(error))
+        print("Failed to get link from MSQL table pages {}".format(error))
     finally:
         # closing database connection.
         cursor.close()
@@ -358,8 +377,7 @@ def get_space_id(spacename):
         global cursor
         cursor = mydb.cursor()
 
-        spl = "SELECT space_ID FROM spaces INNER JOIN links ON spaces.link_id = links.links_ID " \
-              "WHERE LOWER(links.titel) = LOWER(%s)"
+        spl = "SELECT page_ID FROM pages WHERE LOWER(title) = LOWER(%s) AND type = 'global'"
         val = (spacename, )
         cursor.execute(spl, val)
         result = cursor.fetchone()[0]
@@ -378,8 +396,7 @@ def get_pages():
         global cursor
         cursor = mydb.cursor()
 
-        cursor.execute("SELECT p.page_ID, l.titel,l.link,p.type, p.space_id FROM pages"
-                       " p INNER JOIN links l ON p.link_id = l.links_ID")
+        cursor.execute("SELECT * FROM pages")
         result = cursor.fetchall()
         return result
     except mysql.connector.Error as error:
@@ -405,45 +422,48 @@ def db_to_array(cursor_execut_fa):
 
 def vullen():
     # insert values
-    insert_in_to_antwoorden("hallo, hoe gaat het?")
-    insert_in_to_antwoorden("hulp nodig?")
-    insert_in_to_antwoorden("De status van de server is \"Online\".")
-    insert_in_to_antwoorden("De server staat aan")
-    insert_in_to_antwoorden("De server staat uit")
-    insert_in_to_antwoorden("hier is de lijst van de keywoorden:")
-    insert_in_to_antwoorden(" documentatie vind je op volgende link: ")
-    insert_in_to_antwoorden(" configuratie vind je op volgende link: ")
+    insert_in_to_answers("hallo, hoe gaat het?")
+    insert_in_to_answers("hulp nodig?")
+    insert_in_to_answers("De status van de server is \"Online\".")
+    insert_in_to_answers("De server staat aan")
+    insert_in_to_answers("De server staat uit")
+    insert_in_to_answers("hier is de lijst van de keywoorden:")
+    insert_in_to_answers(" documentatie vind je op volgende link: ")
+    insert_in_to_answers(" configuratie vind je op volgende link: ")
 
-    insert_in_to_sleutels(1, "hallo")
-    insert_in_to_sleutels(2, "help")
-    insert_in_to_sleutels(3, "status")
-    insert_in_to_sleutels(6, "lijst")
-    insert_in_to_sleutels(4, "aan")
-    insert_in_to_sleutels(5, "uit")
-    insert_in_to_sleutels(7, "documentatie")
-    insert_in_to_sleutels(8, "confugureer")
+    insert_in_to_links("documentatie")
+    insert_in_to_links("confugureer")
 
-    insert_in_to_links("python", "http://tdc-www.harvard.edu/Python.pdf")
-    insert_in_to_links("ecs", "https://docs.aws.amazon.com/ecs/index.html#lang/en_us")
-    insert_in_to_links("ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us")
-    insert_in_to_links("ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us")
-    insert_in_to_links("s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us")
-    insert_in_to_links("codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us")
-    insert_in_to_links("codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us")
-    insert_in_to_links("docker", "https://docs.docker.com/")
-    insert_in_to_links("cloudformation", "https://docs.aws.amazon.com/cloudformation/index.html")
-    insert_in_to_links("terraform", "https://www.terraform.io/intro/index.html")
-    insert_in_to_links("kubernetes", "https://kubernetes.io/docs/home/")
-    insert_in_to_links("jenkins", "https://jenkins.io/doc/")
+    insert_in_to_keywords(1, "hallo")
+    insert_in_to_keywords(2, "help")
+    insert_in_to_keywords(3, "status")
+    insert_in_to_keywords(6, "lijst")
+    insert_in_to_keywords(4, "aan")
+    insert_in_to_keywords(5, "uit")
+    insert_in_to_keywords_li(7, 1, "documentatie")
+    insert_in_to_keywords_li(8, 2, "confugureer")
+
+    insert_in_to_pages(1, 1, "python", "http://tdc-www.harvard.edu/Python.pdf", "page")
+    insert_in_to_pages(2, 1, "ecs", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us", "page")
+    insert_in_to_pages(3, 1, "ec2", "https://docs.aws.amazon.com/ec2/index.html#lang/en_us", "page")
+    insert_in_to_pages(4, 1, "ecr", "https://docs.aws.amazon.com/ecr/index.html#lang/en_us", "page")
+    insert_in_to_pages(5, 1, "s3", "https://docs.aws.amazon.com/s3/index.html#lang/en_us", "page")
+    insert_in_to_pages(6, 1, "codebuild", "https://docs.aws.amazon.com/codebuild/index.html#lang/en_us", "page")
+    insert_in_to_pages(7, 1, "codepipeline", "https://docs.aws.amazon.com/codepipeline/index.html#lang/en_us", "page")
+    insert_in_to_pages(8, 1, "cloudformation", "https://docs.aws.amazon.com/cloudformation/index.html", "page")
+    insert_in_to_pages(9, 1, "terraform",  "https://www.terraform.io/intro/index.html", "page")
+    insert_in_to_pages(10, 1, "kubernetes", "http://tdc-www.harvard.edu/Python.pdf", "page")
+    insert_in_to_pages(11, 1, "jenkins", "https://jenkins.io/doc/", "page")
+    insert_in_to_pages(12, 1, "docker", "https://docs.docker.com/", "page")
 
 # confluence
 
 
-def zoek_page(space, titel):
+def zoek_page(space, title):
     p = confluence.get_all_pages_from_space(space=space.upper(), start=0, limit=500)
     link = ""
     for i in p:
-        if titel.lower() == str.lower(i['title']):
+        if title.lower() == str.lower(i['title']):
             link = i['_links']['webui']
     print(link)
 
@@ -460,7 +480,7 @@ def get_confluence_spaces():
 def get_confluence_pages():
     links = []
     for i in get_confluence_spaces():
-        p = confluence.get_all_pages_from_space(space=i.titel, start=0, limit=500)
+        p = confluence.get_all_pages_from_space(space=i.title, start=0, limit=500)
         for j in p:
             pa = page.Page(j['id'], j['title'], j['_links']['webui'], j['type'])
             pa.set_space_id(i.id)
@@ -470,14 +490,12 @@ def get_confluence_pages():
 
 def spaces_vullen():
     for space in get_confluence_spaces():
-        insert_in_to_links(space.titel, os.getenv('CONFLUENCE_URL')+space.url)
-        insert_in_to_spaces(space.id, space.titel, space.type)
+        insert_in_to_pages(space.id, 1, space.title, os.getenv('CONFLUENCE_URL')+space.url, space.type)
 
 
 def pages_vullen():
     for page in get_confluence_pages():
-        #insert_in_to_links(page.titel, os.getenv('CONFLUENCE_URL')+page.url)
-        insert_in_to_pages(page.id, page.spaceid, page.titel, page.type)
+        insert_in_to_pages_sp(page.id, page.spaceid, 1, page.title, os.getenv('CONFLUENCE_URL')+page.url, page.type)
 
 
 def check_if_populated():
@@ -518,6 +536,3 @@ def url_check():
         pass
     except requests.exceptions.ConnectionError as e:
         print(e.strerror)
-
-
-# url_check()
